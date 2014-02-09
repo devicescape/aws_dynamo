@@ -485,7 +485,7 @@ static yajl_callbacks batch_get_item_callbacks = {
 	.yajl_end_array = batch_get_item_end_array,
 };
 
-struct aws_dynamo_batch_get_item_response * aws_dynamo_parse_batch_get_item_response(const char *response, int response_len, struct aws_dynamo_batch_get_item_response_table
+struct aws_dynamo_batch_get_item_response * aws_dynamo_parse_batch_get_item_response(const unsigned char *response, int response_len, struct aws_dynamo_batch_get_item_response_table
 *tables, int num_tables)
 {
 	yajl_handle hand;
@@ -534,7 +534,7 @@ struct aws_dynamo_batch_get_item_response * aws_dynamo_parse_batch_get_item_resp
 struct aws_dynamo_batch_get_item_response *aws_dynamo_batch_get_item(struct aws_handle *aws, const char *request, struct aws_dynamo_batch_get_item_response_table *tables, int
 								     num_tables)
 {
-	const char *response;
+	const unsigned char *response;
 	int response_len;
 	struct aws_dynamo_batch_get_item_response *r;
 

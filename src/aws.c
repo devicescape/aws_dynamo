@@ -127,7 +127,7 @@ void aws_deinit(struct aws_handle *aws) {
 	}
 }
 
-static char *base64_encode(char *in, int in_len, size_t *out_len) {
+static char *base64_encode(unsigned char *in, int in_len, size_t *out_len) {
 	BIO *bio = NULL, *b64 = NULL;
 	char *out = NULL;
 	FILE *fp;
@@ -169,11 +169,11 @@ error:
 	return NULL;
 }
 
-char *aws_create_signature(struct aws_handle *aws, const char *message,
+char *aws_create_signature(struct aws_handle *aws, const unsigned char *message,
 	int message_len, const void *key, int key_len)
 {
 	unsigned char md[EVP_MAX_MD_SIZE];
-	int md_len;
+	unsigned int md_len;
 	char *signature;
 	size_t encoded_len;
 

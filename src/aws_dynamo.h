@@ -226,7 +226,7 @@ struct aws_dynamo_key {
 };
 
 int aws_dynamo_json_get_int(const unsigned char *val, size_t len, int *i);
-int aws_dynamo_json_get_double(const unsigned char *val, size_t len, double *d);
+int aws_dynamo_json_get_double(const char *val, size_t len, double *d);
 int aws_dynamo_json_get_type(const unsigned char *val, size_t len, enum aws_dynamo_attribute_type *type);
 int aws_dynamo_json_get_table_status(const unsigned char *val, size_t len, enum aws_dynamo_table_status *status);
 

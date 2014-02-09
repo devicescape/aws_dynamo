@@ -43,6 +43,21 @@
 #define LOCATION	"Location:"
 #define LOCATION_LEN	9
 
+/**
+ * http_new_buffer - allocate a new buffer of the specified size
+ * @handle: HTTP library handle
+ * @size: size of the data buffer
+ * Returns: Pointer to the newly allocated buffer, NULL on error
+ */
+static struct http_buffer *http_new_buffer(size_t size);
+
+/**
+ * http_free_buffer - free a previously allocated buffer
+ * @handle: HTTP library handle
+ * @buf: pointer to buffer
+ */
+static void http_free_buffer(struct http_buffer *buf);
+
 struct http_curl_handle {
        CURL *curl;
        struct http_buffer *buf;
@@ -333,7 +348,7 @@ void http_reset_buffer(struct http_buffer *buf)
  * @len: length of buffer (out)
  * Returns: const pointer to raw data
  */
-const char *http_get_data(void *handle, int *len)
+const unsigned char *http_get_data(void *handle, int *len)
 {
 	struct http_curl_handle *h = handle;
 	struct http_buffer *buf = h->buf;
@@ -448,10 +463,10 @@ int _http_fetch_url(void *handle, const char *url,
 		    int con_close,
 		    struct http_headers *hdrs)
 {
-	struct http_curl_handle *h = handle;
-	struct http_buffer *buf = h->buf;
 	int rv;
 #if DEBUG_HTTP
+	struct http_curl_handle *h = handle;
+	struct http_buffer *buf = h->buf;
 	int i;
 
 	Debug("HTTP GET: %s (%s)\n", url,

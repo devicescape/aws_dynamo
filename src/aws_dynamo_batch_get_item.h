@@ -46,7 +46,7 @@ struct aws_dynamo_batch_get_item_response {
 	char *unprocessed_keys;
 };
 
-struct aws_dynamo_batch_get_item_response *aws_dynamo_parse_batch_get_item_response(const char *response, int response_len, struct aws_dynamo_batch_get_item_response_table *tables, int num_tables);
+struct aws_dynamo_batch_get_item_response *aws_dynamo_parse_batch_get_item_response(const unsigned char *response, int response_len, struct aws_dynamo_batch_get_item_response_table *tables, int num_tables);
 
 struct aws_dynamo_batch_get_item_response *aws_dynamo_batch_get_item(struct aws_handle *aws, const char *request, struct aws_dynamo_batch_get_item_response_table *tables, int num_tables);
 

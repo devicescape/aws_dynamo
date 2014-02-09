@@ -18,6 +18,7 @@
 
 #define _GNU_SOURCE
 
+#include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -497,9 +498,11 @@ int main(int argc, char *argv[])
 					     response_len,
 					     &formatted_response,
 				   	  &formatted_response_len, 1) == 0) {
-						write(1,
+						if (write(1,
 						      formatted_response,
-						      formatted_response_len);
+						      formatted_response_len) != formatted_response_len) {
+							fprintf(stderr, "write failed: %s\n", strerror(errno));
+						}
 						free(formatted_response);
 					}
 				}

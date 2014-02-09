@@ -15,6 +15,7 @@ AC_CHECK_LIB([curl], [curl_easy_perform],,
 AC_CHECK_LIB([expat], [XML_ParserCreate],,
 				 AC_MSG_ERROR([no libexpat; please install libexpat or equivalent]))
 
+AC_SUBST([AM_CFLAGS], [-Wall -Wno-pointer-sign])
 
 AC_PROG_CC
 AC_PROG_LIBTOOL

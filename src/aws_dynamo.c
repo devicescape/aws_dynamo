@@ -427,7 +427,7 @@ static yajl_callbacks error_response_parser_callbacks = {
 
 /* returns 1 if the request should be retried, 0 if the request shouldn't be
 	retried, -1 on error. */
-static int aws_dynamo_parse_error_response(const char *response, int response_len, char **message)
+static int aws_dynamo_parse_error_response(const unsigned char *response, int response_len, char **message)
 {
 	yajl_handle hand;
 	yajl_status stat;
@@ -561,7 +561,7 @@ char *aws_dynamo_get_message(struct aws_handle *aws) {
 	return aws->dynamo_message;
 }
 
-int aws_dynamo_json_get_double(const unsigned char *val, size_t len, double *d)
+int aws_dynamo_json_get_double(const char *val, size_t len, double *d)
 {
 	char buf[32];
 

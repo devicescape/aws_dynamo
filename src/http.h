@@ -70,7 +70,7 @@ char *http_url_encode(void *handle, const char *string);
  * @response: HTTP response code
  */
 struct http_buffer {
-	char *data;
+	unsigned char *data;
 	unsigned int max;
 	unsigned int cur;
 	char *url;
@@ -97,21 +97,6 @@ struct http_headers {
 	size_t count;
 	struct http_header *entries;
 };
-
-/**
- * http_new_buffer - allocate a new buffer of the specified size
- * @handle: HTTP library handle
- * @size: size of the data buffer
- * Returns: Pointer to the newly allocated buffer, NULL on error
- */
-static struct http_buffer *http_new_buffer(size_t size);
-
-/**
- * http_free_buffer - free a previously allocated buffer
- * @handle: HTTP library handle
- * @buf: pointer to buffer
- */
-static void http_free_buffer(struct http_buffer *buf);
 
 /**
  * http_receive_data - callback for processing data received over HTTP
@@ -231,7 +216,7 @@ char *http_escape(const char *str);
  * @len: length of buffer (out)
  * Returns: const pointer to raw data
  */
-const char *http_get_data(void *handle, int *len);
+const unsigned char *http_get_data(void *handle, int *len);
 
 int http_get_response_code(void *handle);
 

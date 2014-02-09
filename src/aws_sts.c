@@ -192,8 +192,6 @@ static int aws_compar_parameters(const void *a, const void *b)
 
 static char *aws_http_get_canonicalized_query_string(struct aws_handle *aws, struct http_parameter *parameters, int num_parameters)
 {
-	char *message;
-	char *signature;
 	char *query_string;
 	int query_string_len = 0;
 	char *ptr;
