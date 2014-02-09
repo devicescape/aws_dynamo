@@ -1,0 +1,19 @@
+- fix json parsers to accept new keys without exiting with an error,
+  they should just print a warning and support new objects of
+  any depth.
+- fix tests to run without mydns
+- make tests that actually talk to DynamoDB
+- rename the aws_handle structure to aws_dynamo_handle for sanity.
+- look at x-amz-crc32 header in response and use it to verify response integrity,
+  could use zlib for crc32
+- add support for remaining DynamoDB operations: BatchWriteItem,
+  DeleteItem, DeleteTable, DescribeTable, ListTables, UpdateTable
+- turn Errx, Warn, Debug macros into methods that save an error message or id that
+  can be retrieved by the application
+- Change aws.c:base64_encode() to not use open_memstream() since open_memstream()
+  isn't portable.  Instead, use an openssl mem buffer, see BIO_s_mem(3) for details.
+- extract x-amzn-RequestId header and include it in error messages
+- add support for B (Binary) and BS (Binary Set) types
+- add support for DynamoDB v2
+- update to signature v4 (I think with that we can stop using the
+  session token service)
