@@ -11,3 +11,8 @@ Makefile.in
 /depcomp
 /install-sh
 /missing
+
+/Makefile
+/config.log
+/config.status
+/libtool
