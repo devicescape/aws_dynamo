@@ -29,7 +29,7 @@
 #include "aws_dynamo.h"
 #include "aws_dynamo_describe_table.h"
 
-#define DEBUG_PARSER 1
+//#define DEBUG_PARSER 1
 
 enum {
 	PARSER_STATE_NONE,
@@ -545,7 +545,6 @@ struct aws_dynamo_describe_table_response *aws_dynamo_describe_table(struct
 	struct aws_dynamo_describe_table_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_DESCRIBE_TABLE, request) == -1) {
-		Warnx("aws_dynamo_describe_table: request failed.");
 		return NULL;
 	}
 

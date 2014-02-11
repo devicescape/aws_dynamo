@@ -28,7 +28,7 @@
 #include "aws_dynamo.h"
 #include "aws_dynamo_delete_table.h"
 
-#define DEBUG_PARSER 1
+//#define DEBUG_PARSER 1
 
 enum {
 	PARSER_STATE_NONE,
@@ -516,7 +516,6 @@ struct aws_dynamo_delete_table_response *aws_dynamo_delete_table(struct
 	struct aws_dynamo_delete_table_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_DELETE_TABLE, request) == -1) {
-		Warnx("aws_dynamo_delete_table: request failed.");
 		return NULL;
 	}
 

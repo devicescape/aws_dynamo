@@ -560,7 +560,6 @@ struct aws_dynamo_query_response *aws_dynamo_query(struct aws_handle *aws,
 	struct aws_dynamo_query_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_QUERY, request) == -1) {
-		Warnx("aws_dynamo_query: request failed.");
 		return NULL;
 	}
 

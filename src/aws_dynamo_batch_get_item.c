@@ -539,7 +539,6 @@ struct aws_dynamo_batch_get_item_response *aws_dynamo_batch_get_item(struct aws_
 	struct aws_dynamo_batch_get_item_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_BATCH_GET_ITEM, request) == -1) {
-		Warnx("aws_dynamo_batch_get_item: request failed.");
 		return NULL;
 	}
 

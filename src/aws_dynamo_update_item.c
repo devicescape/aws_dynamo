@@ -390,7 +390,6 @@ struct aws_dynamo_update_item_response *aws_dynamo_update_item(struct aws_handle
 	struct aws_dynamo_update_item_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_UPDATE_ITEM, request) == -1) {
-		Warnx("aws_dynamo_update_item: request failed.");
 		return NULL;
 	}
 

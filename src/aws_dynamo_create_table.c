@@ -516,7 +516,6 @@ struct aws_dynamo_create_table_response *aws_dynamo_create_table(struct
 	struct aws_dynamo_create_table_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_CREATE_TABLE, request) == -1) {
-		Warnx("aws_dynamo_create_table: request failed.");
 		return NULL;
 	}
 

@@ -22,9 +22,9 @@
 #include <string.h>
 #include <ctype.h>
 
-#define Debug(args...) {fprintf (stderr, args); fprintf (stderr, "\n");}
-#define Warnx(args...) {fprintf (stderr, args); fprintf (stderr, "\n");}
-#define Err(args...) {fprintf (stderr, args); fprintf (stderr, "\n");}
-#define Errx(args...) {fprintf (stderr, args); fprintf (stderr, "\n");}
+#define Debug(args...) {fprintf (stderr, "DEBUG: "); fprintf (stderr, args); fprintf (stderr, "\n");}
+#define Warnx(args...) {fprintf (stderr, "WARN:  "); fprintf (stderr, args); fprintf (stderr, "\n");}
+#define Err(args...) {fprintf (stderr, "ERROR: "); fprintf (stderr, args); fprintf (stderr, "\n");}
+#define Errx(args...) {fprintf (stderr, "ERROR: "); fprintf (stderr, args); fprintf (stderr, "\n");}
 
 #endif /* _AWS_DYNAMO_UTILS_H_ */

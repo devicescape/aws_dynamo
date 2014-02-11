@@ -321,7 +321,6 @@ struct aws_dynamo_get_item_response *aws_dynamo_get_item(struct aws_handle *aws,
 	struct aws_dynamo_get_item_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_GET_ITEM, request) == -1) {
-		Warnx("aws_dynamo_get_item: request failed.");
 		return NULL;
 	}
 

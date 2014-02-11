@@ -390,7 +390,6 @@ struct aws_dynamo_put_item_response *aws_dynamo_put_item(struct aws_handle *aws,
 	struct aws_dynamo_put_item_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_PUT_ITEM, request) == -1) {
-		Warnx("aws_dynamo_put_item: request failed.");
 		return NULL;
 	}
 

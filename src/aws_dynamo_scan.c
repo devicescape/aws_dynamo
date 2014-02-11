@@ -572,7 +572,6 @@ struct aws_dynamo_scan_response *aws_dynamo_scan(struct aws_handle *aws,
 	struct aws_dynamo_scan_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_SCAN, request) == -1) {
-		Warnx("aws_dynamo_scan: request failed.");
 		return NULL;
 	}
 

@@ -544,7 +544,6 @@ struct aws_dynamo_update_table_response *aws_dynamo_update_table(struct
 	struct aws_dynamo_update_table_response *r;
 
 	if (aws_dynamo_request(aws, AWS_DYNAMO_UPDATE_TABLE, request) == -1) {
-		Warnx("aws_dynamo_update_table: request failed.");
 		return NULL;
 	}
 
