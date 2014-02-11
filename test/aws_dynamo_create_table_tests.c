@@ -17,9 +17,13 @@
  */
 
 #include <string.h>
+#include <unistd.h>
+#include <assert.h>
 
 #include "aws_dynamo.h"
 #include "aws_dynamo_create_table.h"
+#include "aws_dynamo_describe_table.h"
+#include "aws_dynamo_delete_table.h"
 
 struct aws_dynamo_create_table_response *aws_dynamo_parse_create_table_response(const char *response, int response_len);
 
@@ -56,6 +60,8 @@ static void test_parse_create_table(void)
 static void test_create_table(void)
 {
 	struct aws_dynamo_create_table_response *r;
+	int write_units = 1;
+	int read_units = 1;
 	const char *request =
 "{\
 	\"TableName\":\"aws_dynamo_test_table\",\
@@ -69,14 +75,65 @@ static void test_create_table(void)
 		\"WriteCapacityUnits\":1\
 	}\
 }";
+	const char *describe_request = "{\
+	\"TableName\":\"aws_dynamo_test_table\"\
+}";
+	struct aws_dynamo_describe_table_response *describe_r;
+	const char *delete_request = "{\
+	\"TableName\":\"aws_dynamo_test_table\"\
+}";
 	struct aws_handle *aws_dynamo;
+	struct aws_dynamo_delete_table_response *delete_r;
 
 	aws_dynamo = aws_init(NULL, NULL);
+
+	assert(aws_dynamo != NULL);
+
+	do {
+		/* Make sure the table doesn't exist. */
+		describe_r = aws_dynamo_describe_table(aws_dynamo, describe_request);
+
+		aws_dynamo_dump_describe_table_response(describe_r);
+		if (describe_r == NULL && aws_dynamo_get_errno(aws_dynamo) == AWS_DYNAMO_CODE_RESOURCE_NOT_FOUND_EXCEPTION) {
+			/* Good, the table isn't there. */
+			aws_dynamo_free_describe_table_response(describe_r);
+			break;
+		}
+
+		if (describe_r->status == AWS_DYNAMO_TABLE_STATUS_ACTIVE) {
+			delete_r = aws_dynamo_delete_table(aws_dynamo, delete_request);
+			aws_dynamo_dump_delete_table_response(delete_r);
+			aws_dynamo_free_delete_table_response(delete_r);
+		}
+
+		aws_dynamo_free_describe_table_response(describe_r);
+		sleep(20);
+
+	} while (1);
 
 	r = aws_dynamo_create_table(aws_dynamo, request);
 
 	aws_dynamo_dump_create_table_response(r);
 	aws_dynamo_free_create_table_response(r);
+
+	sleep(1);
+
+	do {
+		/* Make sure the table exists and is active. */
+		describe_r = aws_dynamo_describe_table(aws_dynamo, describe_request);
+		assert(describe_r != NULL);
+		if (describe_r->status != AWS_DYNAMO_TABLE_STATUS_ACTIVE) {
+			aws_dynamo_free_describe_table_response(describe_r);
+			sleep(20);
+			continue;
+		}
+		assert(describe_r->write_units == write_units);
+		assert(describe_r->read_units == read_units);
+		aws_dynamo_free_describe_table_response(describe_r);
+		break;
+
+	} while (1);
+
 	aws_deinit(aws_dynamo);
 }
 
