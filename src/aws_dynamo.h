@@ -106,6 +106,8 @@ enum {
 #define AWS_DYNAMO_JSON_PROVISIONED_THROUGHPUT "ProvisionedThroughput"
 #define AWS_DYNAMO_JSON_READ_CAPACITY_UNITS "ReadCapacityUnits"
 #define AWS_DYNAMO_JSON_WRITE_CAPACITY_UNITS "WriteCapacityUnits"
+#define AWS_DYNAMO_JSON_LAST_INCREASE_DATE_TIME "LastIncreaseDateTime"
+#define AWS_DYNAMO_JSON_LAST_DECREASE_DATE_TIME "LastDecreaseDateTime"
 #define AWS_DYNAMO_JSON_TABLE_NAME "TableName"
 #define AWS_DYNAMO_JSON_TABLE_STATUS "TableStatus"
 #define AWS_DYNAMO_JSON_ITEM_COUNT "ItemCount"

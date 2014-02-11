@@ -16,11 +16,10 @@
  * along with aws_dynamo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#line 0 "aws_dynamo_batch_get_item.c"
-#include "aws_dynamo_batch_get_item.c"
-#line 3 "aws_dynamo_batch_get_item_tests.c"
+#include <string.h>
 
-#include <assert.h>
+#include "aws_dynamo.h"
+#include "aws_dynamo_batch_get_item.h"
 
 static void test_aws_dynamo_parse_batch_get_item_response(const char *json, struct aws_dynamo_batch_get_item_response_table *tables, int num_tables)
 {
@@ -82,11 +81,6 @@ static void test_parse_batch_get_item_response(void)
 
 int main(int argc, char *argv[])
 {
-#ifdef DEBUG_ENABLED
-	err_verbose = err_debug = 1;
-#endif
-	error_init("mydns", LOG_DAEMON);
-
 	test_parse_batch_get_item_response();
 
 	return 0;

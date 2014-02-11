@@ -16,12 +16,12 @@
  * along with aws_dynamo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _AWS_DYNAMO_DESCRIBE_TABLE_H_
-#define _AWS_DYNAMO_DESCRIBE_TABLE_H_
+#ifndef _AWS_DYNAMO_UPDATE_TABLE_H_
+#define _AWS_DYNAMO_UPDATE_TABLE_H_
 
 #include "aws_dynamo.h"
 
-struct aws_dynamo_describe_table_response {
+struct aws_dynamo_update_table_response {
 	int creation_date_time;
 
 	char *hash_key_name;
@@ -43,10 +43,10 @@ struct aws_dynamo_describe_table_response {
 	enum aws_dynamo_table_status status;
 };
 
-struct aws_dynamo_describe_table_response *aws_dynamo_describe_table(struct aws_handle *aws, const char *request);
+struct aws_dynamo_update_table_response *aws_dynamo_update_table(struct aws_handle *aws, const char *request);
 
-void aws_dynamo_free_describe_table_response(struct aws_dynamo_describe_table_response *r);
-void aws_dynamo_dump_describe_table_response(struct aws_dynamo_describe_table_response *r);
+void aws_dynamo_free_update_table_response(struct aws_dynamo_update_table_response *r);
+void aws_dynamo_dump_update_table_response(struct aws_dynamo_update_table_response *r);
 
-#endif /* _AWS_DYNAMO_DESCRIBE_TABLE_H_ */
+#endif /* _AWS_DYNAMO_UPDATE_TABLE_H_ */
 

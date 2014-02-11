@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with aws_dynamo.  If not, see <http://www.gnu.org/licenses/>.
  */
-#line 0 "aws_dynamo_query.c"
-#include "aws_dynamo_query.c"
-#line 3 "aws_dynamo_query_tests.c"
+#include <string.h>
+#include "aws_dynamo.h"
+#include "aws_dynamo_query.h"
 
 #include <assert.h>
 
@@ -93,11 +93,6 @@ static void test_parse_query_response(void) {
 }
 
 int main(int argc, char *argv[]) {
-
-#ifdef DEBUG_ENABLED
-	err_verbose = err_debug = 1;
-#endif
-	error_init("mydns", LOG_DAEMON);
 
 	test_parse_query_response();
 
