@@ -118,12 +118,15 @@ Notes
 
 In all cases the caller is responsible for creating the request json.  This
 requires some understanding of the AWS DynamoDB API.  The most recent AWS
-DynamoDB API is different from the one implemented here.  This file:
+DynamoDB API is different from the one implemented here.  Documentation for the
+DynamoDB API version that this ilbrary implements can be found here:
 
-dynamodb-dg-2011-12-05.pdf
+http://aws.amazon.com/archives/Amazon-DynamoDB
 
-is a copy of the AWS documentation for the API version that is used here.  See
-section, "Operations in Amazon DynamoDB" starting on page 331 for details.
+See "Docs: Amazon DynamoDB (API Version 2011-12-05)"
+
+See section, "Operations in Amazon DynamoDB" starting on page 331 for details
+on creating DynamoDB JSON requests.
 
 In many cases the caller also provides a template for the structure where the
 response will be written.  The then accesses the response attributes directly
