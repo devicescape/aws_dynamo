@@ -65,6 +65,7 @@
 
 enum {
 	AWS_DYNAMO_CODE_UNKNOWN,
+	AWS_DYNAMO_CODE_NONE,
 	AWS_DYNAMO_CODE_ACCESS_DENIED_EXCEPTION,
 	AWS_DYNAMO_CODE_CONDITIONAL_CHECK_FAILED_EXCEPTION,
 	AWS_DYNAMO_CODE_INCOMPLETE_SIGNATURE_EXCEPTION,
@@ -242,6 +243,7 @@ void aws_dynamo_set_https(struct aws_handle *aws, int https);
 void aws_dynamo_set_https_certificate_file(struct aws_handle *aws, const char *certfile);
 
 char *aws_dynamo_get_message(struct aws_handle *aws);
+int aws_dynamo_get_errno(struct aws_handle *aws);
 
 void aws_dynamo_free_attributes(struct aws_dynamo_attribute *attributes,
 	int num_attributes);

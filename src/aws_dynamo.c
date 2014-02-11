@@ -427,7 +427,7 @@ static yajl_callbacks error_response_parser_callbacks = {
 
 /* returns 1 if the request should be retried, 0 if the request shouldn't be
 	retried, -1 on error. */
-static int aws_dynamo_parse_error_response(const unsigned char *response, int response_len, char **message)
+static int aws_dynamo_parse_error_response(const unsigned char *response, int response_len, char **message, int *code)
 {
 	yajl_handle hand;
 	yajl_status stat;
@@ -449,6 +449,7 @@ static int aws_dynamo_parse_error_response(const unsigned char *response, int re
 		yajl_free_error(hand, str);
 		yajl_free(hand);
 		free(_ctx.message);
+		*code = AWS_DYNAMO_CODE_UNKNOWN;
 		return -1;
 	}
 
@@ -456,6 +457,7 @@ static int aws_dynamo_parse_error_response(const unsigned char *response, int re
 		free(*message);
 		*message = strdup(_ctx.message);
 		free(_ctx.message);
+		*code = _ctx.code;
 	}
 
 	switch(_ctx.code) {
@@ -491,7 +493,8 @@ static int aws_dynamo_parse_error_response(const unsigned char *response, int re
 }
 
 int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *body) {
-	int response_code;
+	int http_response_code;
+	int dynamodb_response_code;
 	int rv = -1;
 	int attempt = 0;
 	char *message = NULL;
@@ -502,15 +505,15 @@ int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *b
 			return -1;
 		}
 	
-		response_code = http_get_response_code(aws->http);
+		http_response_code = http_get_response_code(aws->http);
 
-		if (response_code == 200) {
+		if (http_response_code == 200) {
 			rv = 0;
 			break;
-		} else if (response_code ==  413) {
+		} else if (http_response_code ==  413) {
 			Warnx("aws_dynamo_request: Request Entity Too Large. Maximum item size of 1MB exceeded.");
 			break;
-		} else if (response_code == 400 || response_code == 500) {
+		} else if (http_response_code == 400 || http_response_code == 500) {
 			const char *response;
 			int response_len;
 			int retry;
@@ -523,7 +526,7 @@ int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *b
 				break;
 			}
 
-			retry = aws_dynamo_parse_error_response(response, response_len, &message);
+			retry = aws_dynamo_parse_error_response(response, response_len, &message, &dynamodb_response_code);
 			if (retry == 0) {
 				/* Don't retry. */
 				break;
@@ -550,8 +553,10 @@ int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *b
 		snprintf(aws->dynamo_message, sizeof(aws->dynamo_message), "%s",
 			message);
 		free(message);
+		aws->dynamo_errno = dynamodb_response_code;
 	} else {
 		aws->dynamo_message[0] = '\0';
+		aws->dynamo_errno = AWS_DYNAMO_CODE_NONE;
 	}
 
 	return rv;
@@ -559,6 +564,10 @@ int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *b
 
 char *aws_dynamo_get_message(struct aws_handle *aws) {
 	return aws->dynamo_message;
+}
+
+int aws_dynamo_get_errno(struct aws_handle *aws) {
+	return aws->dynamo_errno;
 }
 
 int aws_dynamo_json_get_double(const char *val, size_t len, double *d)

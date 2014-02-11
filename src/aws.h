@@ -42,6 +42,8 @@ struct aws_handle {
 
 	/* Last DynamoDB error info. */
 	char dynamo_message[512];
+	int dynamo_errno;
+
 	int dynamo_max_retries;
 	int dynamo_https;
 };
