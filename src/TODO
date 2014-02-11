@@ -1,7 +1,6 @@
 - fix json parsers to accept new keys without exiting with an error,
   they should just print a warning and support new objects of
   any depth.
-- fix tests to run without mydns
 - make tests that actually talk to DynamoDB
 - rename the aws_handle structure to aws_dynamo_handle for sanity.
 - look at x-amz-crc32 header in response and use it to verify response integrity,
