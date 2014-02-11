@@ -34,8 +34,8 @@
 enum {
 	PARSER_STATE_NONE,
 	PARSER_STATE_ROOT_MAP,
-	PARSER_STATE_TABLE_DESCRIPTION_KEY,
-	PARSER_STATE_TABLE_DESCRIPTION_MAP,
+	PARSER_STATE_TABLE_KEY,
+	PARSER_STATE_TABLE_MAP,
 	PARSER_STATE_CREATION_DATE_TIME_KEY,
 	PARSER_STATE_KEY_SCHEMA_KEY,
 	PARSER_STATE_KEY_SCHEMA_MAP,
@@ -89,7 +89,7 @@ static int handle_number(void *ctx, const char *val, unsigned int len)
 			}
 			_ctx->r->creation_date_time = (int)date_time;
 
-			_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_MAP;
+			_ctx->parser_state = PARSER_STATE_TABLE_MAP;
 			break;
 		}
 	case PARSER_STATE_READ_CAPACITY_UNITS_KEY:{
@@ -143,7 +143,7 @@ static int handle_number(void *ctx, const char *val, unsigned int len)
 				Warnx("handle_number: failed to get item count.");
 				return 0;
 			}
-			_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_MAP;
+			_ctx->parser_state = PARSER_STATE_TABLE_MAP;
 			break;
 		}
 	case PARSER_STATE_TABLE_SIZE_BYTES_KEY:{
@@ -151,7 +151,7 @@ static int handle_number(void *ctx, const char *val, unsigned int len)
 				Warnx("handle_number: failed to get table size bytes.");
 				return 0;
 			}
-			_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_MAP;
+			_ctx->parser_state = PARSER_STATE_TABLE_MAP;
 			break;
 		}
 	default:{
@@ -184,12 +184,12 @@ static int handle_string(void *ctx, const unsigned char *val, unsigned int len)
 				Warnx("handle_string - failed to get table status");
 				return 0;
 			}
-			_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_MAP;
+			_ctx->parser_state = PARSER_STATE_TABLE_MAP;
 			break;
 		}
 	case PARSER_STATE_TABLE_NAME_KEY:{
 			_ctx->r->table_name = strndup(val, len);
-			_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_MAP;
+			_ctx->parser_state = PARSER_STATE_TABLE_MAP;
 			break;
 		}
 	case PARSER_STATE_HASH_KEY_ATTRIBUTE_NAME_KEY:{
@@ -246,8 +246,8 @@ static int handle_start_map(void *ctx)
 			_ctx->parser_state = PARSER_STATE_ROOT_MAP;
 			break;
 		}
-	case PARSER_STATE_TABLE_DESCRIPTION_KEY:{
-			_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_MAP;
+	case PARSER_STATE_TABLE_KEY:{
+			_ctx->parser_state = PARSER_STATE_TABLE_MAP;
 			break;
 		}
 	case PARSER_STATE_KEY_SCHEMA_KEY:{
@@ -293,8 +293,8 @@ static int handle_map_key(void *ctx, const unsigned char *val, unsigned int len)
 
 	switch (_ctx->parser_state) {
 	case PARSER_STATE_ROOT_MAP:{
-			if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_TABLE_DESCRIPTION, val, len)) {
-				_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_KEY;
+			if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_TABLE, val, len)) {
+				_ctx->parser_state = PARSER_STATE_TABLE_KEY;
 			} else {
 				char key[len + 1];
 				snprintf(key, len + 1, "%s", val);
@@ -304,7 +304,7 @@ static int handle_map_key(void *ctx, const unsigned char *val, unsigned int len)
 			}
 			break;
 		}
-	case PARSER_STATE_TABLE_DESCRIPTION_MAP:{
+	case PARSER_STATE_TABLE_MAP:{
 			if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_CREATION_DATE_TIME, val, len)) {
 				_ctx->parser_state = PARSER_STATE_CREATION_DATE_TIME_KEY;
 			} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_KEY_SCHEMA, val, len)) {
@@ -415,12 +415,12 @@ static int handle_end_map(void *ctx)
 			_ctx->parser_state = PARSER_STATE_NONE;
 			break;
 		}
-	case PARSER_STATE_TABLE_DESCRIPTION_MAP:{
+	case PARSER_STATE_TABLE_MAP:{
 			_ctx->parser_state = PARSER_STATE_ROOT_MAP;
 			break;
 		}
 	case PARSER_STATE_PROVISIONED_THROUGHPUT_MAP:{
-			_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_MAP;
+			_ctx->parser_state = PARSER_STATE_TABLE_MAP;
 			break;
 		}
 	case PARSER_STATE_HASH_KEY_ELEMENT_MAP:{
@@ -432,7 +432,7 @@ static int handle_end_map(void *ctx)
 			break;
 		}
 	case PARSER_STATE_KEY_SCHEMA_MAP:{
-			_ctx->parser_state = PARSER_STATE_TABLE_DESCRIPTION_MAP;
+			_ctx->parser_state = PARSER_STATE_TABLE_MAP;
 			break;
 		}
 	default:{

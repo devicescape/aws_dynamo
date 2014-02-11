@@ -97,6 +97,7 @@ enum {
 #define AWS_DYNAMO_JSON_TYPE_NUMBER_SET	"NS"
 
 #define AWS_DYNAMO_JSON_TABLE_DESCRIPTION "TableDescription"
+#define AWS_DYNAMO_JSON_TABLE "Table"
 #define AWS_DYNAMO_JSON_CREATION_DATE_TIME "CreationDateTime"
 #define AWS_DYNAMO_JSON_KEY_SCHEMA "KeySchema"
 #define AWS_DYNAMO_JSON_HASHKEY_ELEMENT "HashKeyElement"
