@@ -30,6 +30,20 @@ Dependancies
 * expat - for xml parsing, http://expat.sourceforge.net/
 * openssl - for general purpose crypto functions, https://www.openssl.org/
 
+Building
+========
+
+...
+$ ./autogen.sh
+$ ./configure
+$ make
+...
+
+Then, to run tests:
+...
+$ make check
+...
+
 Basic Usage
 ===========
 
