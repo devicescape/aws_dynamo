@@ -1,3 +1,5 @@
+- Add extern "C" {} around public API headers so as to easily interoperate with
+  C++ code.
 - fix json parsers to accept new keys without exiting with an error,
   they should just print a warning and support new objects of
   any depth.
