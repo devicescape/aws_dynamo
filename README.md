@@ -33,16 +33,16 @@ Dependancies
 Building
 ========
 
-...
+```
 $ ./autogen.sh
 $ ./configure
 $ make
-...
+```
 
 Then, to run tests:
-...
+```
 $ make check
-...
+```
 
 Basic Usage
 ===========
@@ -51,8 +51,7 @@ Get item attributes from DynamoDB.  Assume we have a table named
 'users' with a string hash key and attributes 'realName'
 and 'lastSeen'.
 
-...
-
+```
 #define REAL_NAME_ATTRIBUTE_NAME	"realName"
 #define REAL_NAME_ATTRIBUTE_INDEX	0
 #define LAST_SEEN_ATTRIBUTE_NAME	"lastSeen"
@@ -110,8 +109,7 @@ and 'lastSeen'.
 	printf("%s was last seen at %d.", real_name->value.string, last_seen->value.number.value.integer_val);
 
 	aws_dynamo_free_get_item_response(r);
-
-...
+```
 
 Notes
 =====
