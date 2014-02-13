@@ -52,6 +52,8 @@ $ sudo make install
 Basic Usage
 ===========
 
+See the examples/ subdirectory for detailed example.
+
 Get item attributes from DynamoDB.  Assume we have a table named
 'users' with a string hash key and attributes 'realName'
 and 'lastSeen'.
@@ -85,8 +87,8 @@ and 'lastSeen'.
 	const char *request = 
 "{\
 	\"TableName\":\"users\",\
-	\"Key\":{\"\
-		HashKeyElement\":{\"S\":\"jdoe\"}
+	\"Key\":{\
+		\"HashKeyElement\":{\"S\":\"jdoe\"}
 	},\
 	\"AttributesToGet\":[\""\
 		REAL_NAME_ATTRIBUTE_NAME "\",\"" \
