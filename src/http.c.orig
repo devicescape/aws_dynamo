@@ -397,7 +397,7 @@ size_t http_receive_data(void *ptr, size_t size, size_t nmemb, void *arg)
 	if (len > (size_t)(buf->max - buf->cur)) {
 		/* Too much data for buffer */
 		len = buf->max - buf->cur;
-		Warnx("Only storing %zd bytes; buffer too small\n", len);
+		Warnx("Only storing %d bytes; buffer too small\n", len);
 	}
 	memcpy(buf->data + buf->cur, ptr, len);
 	buf->cur += len;

@@ -251,7 +251,7 @@ struct error_response_parser_ctx {
 };
 
 static int error_response_parser_string(void *ctx, const unsigned char *val,
-				 size_t len)
+				 unsigned int len)
 {
 	struct error_response_parser_ctx *_ctx = (struct error_response_parser_ctx *)ctx;
 #ifdef DEBUG_PARSER
@@ -359,7 +359,7 @@ static int error_response_parser_start_map(void *ctx)
 }
 
 static int error_response_parser_map_key(void *ctx, const unsigned char *val,
-				  size_t len)
+				  unsigned int len)
 {
 	struct error_response_parser_ctx *_ctx = (struct error_response_parser_ctx *)ctx;
 #ifdef DEBUG_PARSER
