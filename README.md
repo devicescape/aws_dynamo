@@ -44,6 +44,11 @@ Then, to run tests:
 $ make check
 ```
 
+To install the library:
+```
+$ sudo make install
+```
+
 Basic Usage
 ===========
 

@@ -13,6 +13,7 @@ libaws_dynamo_la_SOURCES = aws.c aws_dynamo.c \
 	http.h
 
 libaws_dynamo_la_CPPFLAGS = -I$(top_srcdir)/src
+libaws_dynamo_la_LDFLAGS = -version-info 0:0:0
 
 pkginclude_HEADERS=\
 	aws_dynamo_batch_get_item.h \
@@ -27,3 +28,9 @@ pkginclude_HEADERS=\
 	aws_dynamo_update_item.h \
 	aws_dynamo_update_table.h \
 	aws.h
+
+
+# We need to run ldconfig on some systems after installing.
+# Run it here if possible, it is ok if this fails.
+install-exec-hook:
+	-/sbin/ldconfig || :;
