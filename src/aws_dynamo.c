@@ -20,9 +20,8 @@
 
 #include "aws_dynamo_utils.h"
 
-#define CONF OPENSSL_CONF
 #include <openssl/sha.h>
-#undef CONF
+
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>

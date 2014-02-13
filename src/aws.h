@@ -19,9 +19,7 @@
 #ifndef _AWS_H_
 #define _AWS_H_
 
-#define CONF OPENSSL_CONF
 #include <openssl/hmac.h>
-#undef CONF
 
 #define AWS_SESSION_REFRESH_TIME (60 * 5) /* seconds */
 

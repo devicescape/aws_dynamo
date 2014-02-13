@@ -25,14 +25,12 @@
 #include "aws_iam.h"
 #include "aws.h"
 
-#define CONF OPENSSL_CONF
 #include <openssl/engine.h>
 #include <openssl/sha.h>
 #include <openssl/buffer.h>
 #include <openssl/hmac.h>
 #include <openssl/bio.h>
 #include <openssl/evp.h>
-#undef CONF
 
 #include <stdlib.h>
 #include <stdio.h>
