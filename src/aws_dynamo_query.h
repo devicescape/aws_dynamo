@@ -21,6 +21,10 @@
 
 #include "aws_dynamo.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 struct aws_dynamo_query_response {
 	double consumed_capacity_units;
 	int count;
@@ -45,5 +49,9 @@ struct aws_dynamo_query_response *aws_dynamo_query_combine_and_free_responses(
 void aws_dynamo_free_query_response(struct aws_dynamo_query_response *r);
 
 void aws_dynamo_dump_query_response(struct aws_dynamo_query_response *r);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _AWS_DYNAMO_QUERY_H_ */

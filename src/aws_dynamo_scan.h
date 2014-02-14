@@ -21,6 +21,10 @@
 
 #include "aws_dynamo.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 struct aws_dynamo_scan_response {
 	double consumed_capacity_units;
 	int count;
@@ -42,5 +46,9 @@ struct aws_dynamo_scan_response *aws_dynamo_scan(struct aws_handle *aws,
 void aws_dynamo_free_scan_response(struct aws_dynamo_scan_response *r);
 
 void aws_dynamo_dump_scan_response(struct aws_dynamo_scan_response *r);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _AWS_DYNAMO_SCAN_H_ */

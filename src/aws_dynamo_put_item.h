@@ -21,6 +21,10 @@
 
 #include "aws_dynamo.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 struct aws_dynamo_put_item_response {
 	int num_attributes;
 	struct aws_dynamo_attribute *attributes;
@@ -31,6 +35,10 @@ struct aws_dynamo_put_item_response *aws_dynamo_put_item(struct aws_handle *aws,
 
 void aws_dynamo_free_put_item_response(struct aws_dynamo_put_item_response *r);
 void aws_dynamo_dump_put_item_response(struct aws_dynamo_put_item_response *r);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _AWS_DYNAMO_PUT_ITEM_H_ */
 

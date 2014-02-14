@@ -21,6 +21,10 @@
 
 #include "aws_dynamo.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 struct aws_dynamo_describe_table_response {
 	int creation_date_time;
 
@@ -47,6 +51,10 @@ struct aws_dynamo_describe_table_response *aws_dynamo_describe_table(struct aws_
 
 void aws_dynamo_free_describe_table_response(struct aws_dynamo_describe_table_response *r);
 void aws_dynamo_dump_describe_table_response(struct aws_dynamo_describe_table_response *r);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _AWS_DYNAMO_DESCRIBE_TABLE_H_ */
 

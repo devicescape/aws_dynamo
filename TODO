@@ -1,9 +1,7 @@
-- Add extern "C" {} around public API headers so as to easily interoperate with
-  C++ code.
 - fix json parsers to accept new keys without exiting with an error,
   they should just print a warning and support new objects of
   any depth.
-- make tests that actually talk to DynamoDB
+- make more tests that actually talk to DynamoDB
 - rename the aws_handle structure to aws_dynamo_handle for sanity.
 - look at x-amz-crc32 header in response and use it to verify response integrity,
   could use zlib for crc32
@@ -20,4 +18,3 @@
   session token service)
 - add support for more error codes: UnrecognizedClientException, 413 (Request Entity too large)
 - make dynamodb endpoint configurable
-- make it so you can include aws_dynamo.h and that is all you need to get all library functions.

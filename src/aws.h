@@ -21,6 +21,10 @@
 
 #include <openssl/hmac.h>
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 #define AWS_SESSION_REFRESH_TIME (60 * 5) /* seconds */
 
 struct aws_session_token {
@@ -58,5 +62,9 @@ time_t aws_parse_iso8601_date(char *str);
 void aws_free_session_token(struct aws_session_token *token);
 
 int aws_get_security_credentials(struct aws_handle *aws, char **id, char **key);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _AWS_H_ */

@@ -21,6 +21,10 @@
 
 #include "aws.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 #define AWS_DYNAMO_HOST "dynamodb.us-east-1.amazonaws.com"
 #define AWS_DYNAMO_HTTPS_URL	"https://" AWS_DYNAMO_HOST "/"
 #define AWS_DYNAMO_HTTP_URL	"http://" AWS_DYNAMO_HOST "/"
@@ -256,6 +260,10 @@ int aws_dynamo_parse_attribute_value(struct aws_dynamo_attribute *attribute, con
 struct aws_dynamo_item *aws_dynamo_copy_item(struct aws_dynamo_item *item);
 
 void aws_dynamo_free_item(struct aws_dynamo_item *item);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #include "aws_dynamo_batch_get_item.h"
 #include "aws_dynamo_create_table.h"

@@ -16,8 +16,9 @@
  * along with aws_dynamo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
+
 #include <string.h>
-#include <unistd.h>
 #include <aws_dynamo/aws_dynamo.h>
 
 #define USERNAME_ATTRIBUTE_NAME		"username"
@@ -91,19 +92,24 @@ static int example_get_item(struct aws_handle *aws)
 
 	struct aws_dynamo_attribute attributes[] = {
 		{
+		/* C++ doesn't allow designated initializers.
+		   Initialize the members in order. */
 		 /* Index: REAL_NAME_ATTRIBUTE_INDEX */
-		 .name = REAL_NAME_ATTRIBUTE_NAME,
-		 .name_len = strlen(REAL_NAME_ATTRIBUTE_NAME),
-		 .type = AWS_DYNAMO_STRING,
+		 /* .name = */ REAL_NAME_ATTRIBUTE_NAME,
+		 /* .name_len = */ strlen(REAL_NAME_ATTRIBUTE_NAME),
+		 /* .type = */ AWS_DYNAMO_STRING,
 		 },
 		{
 		 /* Index: LAST_SEEN_ATTRIBUTE_INDEX */
-		 .name = LAST_SEEN_ATTRIBUTE_NAME,
-		 .name_len = strlen(LAST_SEEN_ATTRIBUTE_NAME),
-		 .type = AWS_DYNAMO_NUMBER,
-		 .value.number.type = AWS_DYNAMO_NUMBER_INTEGER,
+		 /* .name = */ LAST_SEEN_ATTRIBUTE_NAME,
+		 /* .name_len = */ strlen(LAST_SEEN_ATTRIBUTE_NAME),
+		 /* .type = */ AWS_DYNAMO_NUMBER,
 		 },
 	};
+	/* C++ doesn't allow for initializing a particular union member.
+	   Set the value unions's type member after the structure above
+	   has been initialized. */
+	attributes[LAST_SEEN_ATTRIBUTE_INDEX].value.number.type = AWS_DYNAMO_NUMBER_INTEGER;
 	struct aws_dynamo_get_item_response *r = NULL;
 	struct aws_dynamo_attribute *real_name;
 	struct aws_dynamo_attribute *last_seen;
@@ -135,8 +141,8 @@ static int example_get_item(struct aws_handle *aws)
 	last_seen = &(r->item.attributes[LAST_SEEN_ATTRIBUTE_INDEX]);
 
 	/* prints: "John Doe was last seen at 1391883778." */
-	printf("%s was last seen at %llu\n", real_name->value.string,
-	       *last_seen->value.number.value.integer_val);
+	std::cout << real_name->value.string << " was last seen at "
+	       << *last_seen->value.number.value.integer_val << std::endl;
 
 	aws_dynamo_free_get_item_response(r);
 	return 0;

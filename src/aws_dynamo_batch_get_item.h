@@ -21,6 +21,10 @@
 
 #include "aws_dynamo.h"
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
+
 struct aws_dynamo_batch_get_item_response_table {
 	/* The name of the table. */
 	const char *name;
@@ -53,6 +57,10 @@ struct aws_dynamo_batch_get_item_response *aws_dynamo_batch_get_item(struct aws_
 void aws_dynamo_free_batch_get_item_response(struct aws_dynamo_batch_get_item_response *r);
 
 void aws_dynamo_dump_batch_get_item_response(struct aws_dynamo_batch_get_item_response *r);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _AWS_DYNAMO_BATCH_GET_ITEM_H_ */
 
