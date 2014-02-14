@@ -1,20 +1,48 @@
-- fix json parsers to accept new keys without exiting with an error,
-  they should just print a warning and support new objects of
-  any depth.
-- make more tests that actually talk to DynamoDB
-- rename the aws_handle structure to aws_dynamo_handle for sanity.
-- look at x-amz-crc32 header in response and use it to verify response integrity,
-  could use zlib for crc32
+In roughly descending order of priority (most important listed first)
+
+- More tests - The tests/ subdirectory needs more tests.  There are only a few
+tests that actually talk to DynamoDB.  At a minimum we need tests for all
+operations that actually talk to DynamoDB.  We need to get better code
+coverage.  Maybe even use gconv to monitor the amoun of code coverage.
+[effort: large]
+
+- Look at x-amz-crc32 header in response and use it to verify response
+integrity, could use zlib for crc32.  This header was added in a recent
+API update.  It is important to take advantage of this header
+[effort: medium]
+
 - add support for remaining DynamoDB operations: 
   list tables, batch write item, delete item
-- turn Errx, Warn, Debug macros into methods that save an error message or id that
-  can be retrieved by the application
+[effort: medium]
+
+- make dynamodb endpoint configurable
+[effort: small]
+
+- add support for B (Binary) and BS (Binary Set) types
+[effort: medium]
+
+- add support for more error codes: UnrecognizedClientException,
+  413 (Request Entity too large)
+[effort: small]
+
+- Consider fixing the json parsers to accept new keys without exiting with
+  an error.  Maybe they should just print a warning and support new objects of
+  any depth.
+[effort: large]
+
 - Change aws.c:base64_encode() to not use open_memstream() since open_memstream()
   isn't portable.  Instead, use an openssl mem buffer, see BIO_s_mem(3) for details.
+[effort: small]
+
 - extract x-amzn-RequestId header and include it in error messages
-- add support for B (Binary) and BS (Binary Set) types
+[effort: small]
+
+- rename the aws_handle structure to aws_dynamo_handle for sanity.
+[effort: large]
+
 - add support for DynamoDB v2
+[effort: huge]
+
 - update to signature v4 (I think with that we can stop using the
   session token service)
-- add support for more error codes: UnrecognizedClientException, 413 (Request Entity too large)
-- make dynamodb endpoint configurable
+[effort: medium]
