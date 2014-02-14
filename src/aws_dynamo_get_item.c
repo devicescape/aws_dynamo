@@ -358,7 +358,6 @@ void aws_dynamo_dump_get_item_response(struct aws_dynamo_get_item_response *r) {
 }
 
 void aws_dynamo_free_get_item_response(struct aws_dynamo_get_item_response *r) {
-	int i;
 	struct aws_dynamo_item *item;
 
 	if (r == NULL) {

@@ -21,6 +21,8 @@
 
 #include <assert.h>
 
+struct aws_dynamo_update_item_response * aws_dynamo_parse_update_item_response(const char *response, int response_len, struct aws_dynamo_attribute *attributes, int num_attributes);
+
 static void test_aws_dynamo_parse_update_item_response(const char *json, struct aws_dynamo_attribute *attributes, int num_attributes)
 {
 	struct aws_dynamo_update_item_response *r;

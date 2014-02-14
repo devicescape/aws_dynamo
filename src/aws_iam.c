@@ -79,8 +79,8 @@ struct aws_iam_parse_credentials_ctx {
 
 static int aws_iam_parse_credentials_number(void * ctx, const char *val, unsigned int len)
 {
-	struct aws_iam_parse_credentials_ctx *_ctx = (struct aws_iam_parse_credentials_ctx *) ctx;
 #ifdef DEBUG_PARSER
+	struct aws_iam_parse_credentials_ctx *_ctx = (struct aws_iam_parse_credentials_ctx *) ctx;
 	char buf[len + 1];
 	snprintf(buf, len + 1, "%s", val);
 	
@@ -276,8 +276,8 @@ static int aws_iam_parse_credentials_end_map(void *ctx)
 
 static int aws_iam_parse_credentials_start_array(void *ctx)
 {
-	struct aws_iam_parse_credentials_ctx *_ctx = (struct aws_iam_parse_credentials_ctx *)ctx;
 #ifdef DEBUG_PARSER
+	struct aws_iam_parse_credentials_ctx *_ctx = (struct aws_iam_parse_credentials_ctx *)ctx;
 	Debug("aws_iam_parse_credentials_start_array enter state '%s'", parser_state_string(_ctx->parser_state));
 #endif				/* DEBUG_PARSER */
 	Warnx("aws_iam_parse_credentials_start_array: unexpected json.");
@@ -286,8 +286,8 @@ static int aws_iam_parse_credentials_start_array(void *ctx)
 
 static int aws_iam_parse_credentials_end_array(void *ctx)
 {
-	struct aws_iam_parse_credentials_ctx *_ctx = (struct aws_iam_parse_credentials_ctx *)ctx;
 #ifdef DEBUG_PARSER
+	struct aws_iam_parse_credentials_ctx *_ctx = (struct aws_iam_parse_credentials_ctx *)ctx;
 	Debug("aws_iam_parse_credentials_end_array enter state '%s'", parser_state_string(_ctx->parser_state));
 #endif				/* DEBUG_PARSER */
 	Warnx("aws_iam_parse_credentials_start_array: unexpected json.");

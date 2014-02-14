@@ -38,6 +38,13 @@
 //#define DEBUG_AWS_DYNAMO 1
 //#define DEBUG_PARSER 1
 
+const char *aws_dynamo_attribute_types[] = {
+	AWS_DYNAMO_JSON_TYPE_STRING,
+	AWS_DYNAMO_JSON_TYPE_STRING_SET,
+	AWS_DYNAMO_JSON_TYPE_NUMBER,
+	AWS_DYNAMO_JSON_TYPE_NUMBER_SET,
+};
+
 static char *aws_dynamo_get_canonicalized_headers(struct http_headers *headers) {
 	int i;
 	int canonical_headers_len = 0;
@@ -493,7 +500,7 @@ static int aws_dynamo_parse_error_response(const unsigned char *response, int re
 
 int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *body) {
 	int http_response_code;
-	int dynamodb_response_code;
+	int dynamodb_response_code = AWS_DYNAMO_CODE_UNKNOWN;
 	int rv = -1;
 	int attempt = 0;
 	char *message = NULL;
@@ -769,7 +776,6 @@ void aws_dynamo_dump_attributes(struct aws_dynamo_attribute *attributes,
 void aws_dynamo_free_attributes(struct aws_dynamo_attribute *attributes,
 	int num_attributes) {
 	int j;
-	struct aws_dynamo_attributes *attribute;
 
 	for (j = 0; j < num_attributes; j++) {
 		struct aws_dynamo_attribute *attribute;
@@ -911,7 +917,6 @@ int aws_dynamo_parse_attribute_value(struct aws_dynamo_attribute *attribute, con
 struct aws_dynamo_item *aws_dynamo_copy_item(struct aws_dynamo_item *item) {
 	struct aws_dynamo_item *copy;
 	int j;
-	struct aws_dynamo_attributes *attribute;
 
 	copy = calloc(1, sizeof(*copy));
 

@@ -160,12 +160,7 @@ enum aws_dynamo_number_type {
 /* XXX: The indexes in this array must correspond to
 	to the aws_dynamo_attribute_type above. */
 /* XXX: maybe make this a function instead. */
-static const char *aws_dynamo_attribute_types[] = {
-	AWS_DYNAMO_JSON_TYPE_STRING,
-	AWS_DYNAMO_JSON_TYPE_STRING_SET,
-	AWS_DYNAMO_JSON_TYPE_NUMBER,
-	AWS_DYNAMO_JSON_TYPE_NUMBER_SET,
-};
+extern const char *aws_dynamo_attribute_types[];
 
 struct aws_dynamo_string_set {
 	int num_strings;
