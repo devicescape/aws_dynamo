@@ -15,7 +15,21 @@ AC_CHECK_LIB([curl], [curl_easy_perform],,
 AC_CHECK_LIB([expat], [XML_ParserCreate],,
 				 AC_MSG_ERROR([no libexpat; please install libexpat or equivalent]))
 
-AC_SUBST([AM_CFLAGS], [-Wall -Wno-pointer-sign])
+LOCAL_CFLAGS="-Wall -Wno-pointer-sign"
+AC_ARG_ENABLE([debug], [  --enable-debug    Turn on debugging],
+[case "${enableval}" in
+  yes)
+    debug=true
+    LOCAL_CFLAGS="${LOCAL_CFLAGS} -Werror"
+    ;;
+  no)
+    debug=false
+    ;;
+  *) AC_MSG_ERROR([bad value ${enableval} for --enable-debug]) ;;
+esac],[debug=false])
+AM_CONDITIONAL([DEBUG], [test x$debug = xtrue])
+ 
+AC_SUBST([AM_CFLAGS], [${LOCAL_CFLAGS}])
 
 AC_PROG_CC
 AC_PROG_LIBTOOL
