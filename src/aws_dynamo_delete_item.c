@@ -95,7 +95,7 @@ static int handle_number(void * ctx, const char *val, unsigned int len)
 			break;
 		}
 		default: {
-			Warnx("handle_number - unexpected state");
+			Warnx("handle_number - unexpected state '%s'", parser_state_string(_ctx->parser_state));
 			return 0;
 			break;
 		}
@@ -142,7 +142,7 @@ static int handle_string(void *ctx, const unsigned char *val,  unsigned int len)
 			break;
 		}
 		default: {
-			Warnx("handle_string - unexpected state");
+			Warnx("handle_string - unexpected state '%s'", parser_state_string(_ctx->parser_state));
 			return 0;
 			break;
 		}
@@ -177,7 +177,7 @@ static int handle_start_map(void *ctx)
 			break;
 		}
 		default: {
-			Warnx("handle_start_map - unexpected state: %d", parser_state_string(_ctx->parser_state));
+			Warnx("handle_start_map - unexpected state: %s", parser_state_string(_ctx->parser_state));
 			return 0;
 			break;
 		}
@@ -256,7 +256,7 @@ static int handle_map_key(void *ctx, const unsigned char *val,
 			break;
 		}
 		default: {
-			Warnx("handle_map_key - unexpected state");
+			Warnx("handle_map_key - unexpected state: %s", parser_state_string(_ctx->parser_state));
 			return 0;
 			break;
 		}
@@ -288,7 +288,7 @@ static int handle_end_map(void *ctx)
 			break;
 		}
 		default: {
-			Warnx("handle_end_map - unexpected state");
+			Warnx("handle_end_map - unexpected state: %s", parser_state_string(_ctx->parser_state));
 			return 0;
 			break;
 		}
