@@ -7,4 +7,4 @@ example-cpp: example.cpp
 	$(CXX) -Wall example.cpp -l aws_dynamo -o example-cpp
 
 clean:
-	rm -f example
+	rm -f example-c example-cpp
