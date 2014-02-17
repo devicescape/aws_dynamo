@@ -128,6 +128,7 @@ static int example_get_item(struct aws_handle *aws)
 
 	if (r->item.attributes == NULL) {
 		/* No item found. */
+		aws_dynamo_free_get_item_response(r);
 		return -1;
 	}
 
