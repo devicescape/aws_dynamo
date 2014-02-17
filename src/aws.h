@@ -48,6 +48,8 @@ struct aws_handle {
 
 	int dynamo_max_retries;
 	int dynamo_https;
+	int dynamo_port;
+	char *dynamo_host;
 };
 
 

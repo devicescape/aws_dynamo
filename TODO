@@ -18,9 +18,6 @@ API update.  It is important to take advantage of this header
   list tables, batch write item
 [effort: medium]
 
-- make dynamodb endpoint configurable
-[effort: small]
-
 - add support for B (Binary) and BS (Binary Set) types
 [effort: medium]
 

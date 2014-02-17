@@ -115,11 +115,12 @@ static char *aws_dynamo_create_signature(struct aws_handle *aws, const char *hea
 static int aws_dynamo_post(struct aws_handle *aws, const char *target, const char *body) {
 	char amz_date[128];
 	char amz_auth[256];
+	char host_header[256];
 	struct http_header hdrs[] = {
 		/* Note: The .name fields must all lowercase and the headers included
 			in the signature must be sorted here.  This simplifies the signature
 			calculation. */
-		{ .name = HTTP_HOST_HEADER, .value = AWS_DYNAMO_HOST },
+		{ .name = HTTP_HOST_HEADER, .value = host_header },
 		{ .name = AWS_DYNAMO_DATE_HEADER, .value = amz_date },
 		{ .name = AWS_DYNAMO_TOKEN_HEADER, .value = aws->token->session_token },
 		{ .name = AWS_DYNAMO_TARGET_HEADER, .value = target },
@@ -134,9 +135,25 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 	};
 	struct tm tm;
 	time_t now;
-	char *canonical_headers;
-	char *signature;
+	char *canonical_headers = NULL;
+	char *signature = NULL;
 	int n;
+	char *url = NULL;
+	const char *scheme;
+	const char *host;
+
+	if (aws->dynamo_host) {
+		host = aws->dynamo_host;
+	} else {
+		host = AWS_DYNAMO_DEFAULT_HOST;
+	}
+
+	n = snprintf(host_header, sizeof(host_header), "%s", host);
+
+	if (n == -1 || n >= sizeof(host_header)) {
+		Warnx("aws_dynamo_post: host header truncated");
+		goto failure;
+	}
 
 	if (time(&now) == -1) {
 		Warnx("aws_dynamo_post: Failed to get time.");
@@ -195,9 +212,8 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 		aws->token->secret_access_key, strlen(aws->token->secret_access_key));
 
 	if (signature == NULL) {
-		free(canonical_headers);
 		Warnx("aws_dynamo_post: Failed to get signature.");
-		return -1;
+		goto failure;
 	}
 
 	n = snprintf(amz_auth, sizeof(amz_auth),
@@ -205,10 +221,8 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 		aws->token->access_key_id, signature);
 		
 	if (n == -1 || n >= sizeof(amz_auth)) {
-		free(canonical_headers);
-		free(signature);
 		Warnx("aws_dynamo_post: amz auth truncated");
-		return -1;
+		goto failure;
 	}
 
 	/* Include all headers now that the signature calculation is complete. */
@@ -217,15 +231,31 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 #ifdef DEBUG_AWS_DYNAMO
 	Debug("aws_dynamo_post: '%s'", body);
 #endif
+	if (aws->dynamo_https) {
+		scheme = "https";
+	} else {
+		scheme = "http";
+	}
 
-	if (_http_post(aws->http, aws->dynamo_https ? AWS_DYNAMO_HTTPS_URL : AWS_DYNAMO_HTTP_URL, body, &headers) != HTTP_OK) {
+	if (aws->dynamo_port > 0) {
+		if (asprintf(&url, "%s://%s:%d/", scheme, host, aws->dynamo_port) == -1) {
+			Warnx("aws_dynamo_post: failed to create url");
+			goto failure;
+
+		}
+	} else {
+		if (asprintf(&url, "%s://%s/", scheme, host) == -1) {
+			Warnx("aws_dynamo_post: failed to create url");
+			goto failure;
+		}
+	}
+
+	if (_http_post(aws->http, url, body, &headers) != HTTP_OK) {
 		Warnx("aws_dynamo_post: HTTP post failed, will retry.");
 		usleep(100000);
-		if (_http_post(aws->http, aws->dynamo_https ? AWS_DYNAMO_HTTPS_URL : AWS_DYNAMO_HTTP_URL, body, &headers) != HTTP_OK) {
+		if (_http_post(aws->http, url, body, &headers) != HTTP_OK) {
 			Warnx("aws_dynamo_post: Retry failed.");
-			free(canonical_headers);
-			free(signature);
-			return -1;
+			goto failure;
 		}
 	}
 
@@ -239,8 +269,15 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 
 	free(canonical_headers);
 	free(signature);
+	free(url);
 
 	return 0;
+failure:
+	free(canonical_headers);
+	free(signature);
+	free(url);
+
+	return -1;
 }
 
 enum {
@@ -1034,3 +1071,18 @@ void aws_dynamo_set_https_certificate_file(struct aws_handle *aws, const char *f
 	http_set_https_certificate_file(aws->http, filename);
 }
 
+int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host) {
+	char *h;
+
+	h = strdup(host);
+	if (h == NULL) {
+		Warnx("aws_dynamo_set_endpoint: failed ot allocate host");
+		return -1;
+	}	
+	aws->dynamo_host = h;
+	return 0;
+}
+
+void aws_dynamo_set_port(struct aws_handle *aws, int port) {
+	aws->dynamo_port = port;
+}

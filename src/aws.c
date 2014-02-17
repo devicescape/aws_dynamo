@@ -99,6 +99,8 @@ struct aws_handle *aws_init(const char *aws_id, const char *aws_key) {
 
 	aws->dynamo_max_retries = AWS_DYNAMO_DEFAULT_MAX_RETRIES;
 	aws->dynamo_https = AWS_DYNAMO_DEFAULT_HTTPS;
+	aws->dynamo_host = NULL;
+	aws->dynamo_port = 0;
 
 	return aws;
 
@@ -119,6 +121,7 @@ void aws_deinit(struct aws_handle *aws) {
 		}
 		free(aws->aws_id);
 		free(aws->aws_key);
+		free(aws->dynamo_host);
 		aws_free_session_token(aws->token);
 
 		free(aws);

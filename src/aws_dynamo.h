@@ -25,9 +25,7 @@
 extern "C" {
 #endif
 
-#define AWS_DYNAMO_HOST "dynamodb.us-east-1.amazonaws.com"
-#define AWS_DYNAMO_HTTPS_URL	"https://" AWS_DYNAMO_HOST "/"
-#define AWS_DYNAMO_HTTP_URL	"http://" AWS_DYNAMO_HOST "/"
+#define AWS_DYNAMO_DEFAULT_HOST "dynamodb.us-east-1.amazonaws.com"
 
 /* AWS DynamoDB HTTP headers names.  These are all lowercase
 	to simplify the signature calculation. */
@@ -240,6 +238,9 @@ void aws_dynamo_set_max_retries(struct aws_handle *aws, int dynamo_max_retries);
 void aws_dynamo_set_https(struct aws_handle *aws, int https);
 
 void aws_dynamo_set_https_certificate_file(struct aws_handle *aws, const char *certfile);
+
+int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host);
+void aws_dynamo_set_port(struct aws_handle *aws, int port);
 
 char *aws_dynamo_get_message(struct aws_handle *aws);
 int aws_dynamo_get_errno(struct aws_handle *aws);
