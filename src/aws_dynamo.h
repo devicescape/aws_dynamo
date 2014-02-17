@@ -239,7 +239,22 @@ void aws_dynamo_set_https(struct aws_handle *aws, int https);
 
 void aws_dynamo_set_https_certificate_file(struct aws_handle *aws, const char *certfile);
 
+/**
+ * aws_dynamo_set_endpoint() - Set the endpoint to use for DynamoDB requests.
+ * @aws:	Library handle.
+ * @host:	Endpoint hostname (ex. 'dynamodb.us-west-2.amazonaws.com').
+ *
+ * The endpoint is the host to use for DynamoDB requests.  See the list
+ * of supported endpoints here:
+ * http://docs.aws.amazon.com/general/latest/gr/rande.html#ddb_region
+ *
+ * In addition to the AWS hosted endpoints described above this setting
+ * can be used to configure the library to use a local DynamoDB local endpoint.
+ *
+ * Return: 0 on success, -1 on failure to allocate a copy of @host.
+ */
 int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host);
+
 void aws_dynamo_set_port(struct aws_handle *aws, int port);
 
 char *aws_dynamo_get_message(struct aws_handle *aws);

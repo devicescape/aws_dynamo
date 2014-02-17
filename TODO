@@ -6,6 +6,11 @@ operations that actually talk to DynamoDB.  We need to get better code
 coverage.  Maybe even use gconv to monitor the amoun of code coverage.
 [effort: large]
 
+- Add documentation in header files for all public APIs. We use the Linux
+kernel documentation style.  See the definition of aws_dynamo_set_endpoint()
+in ./src/aws_dynamo.h for an example.
+[effort: medium]
+
 - Look at x-amz-crc32 header in response and use it to verify response
 integrity, could use zlib for crc32.  This header was added in a recent
 API update.  It is important to take advantage of this header
