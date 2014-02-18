@@ -233,6 +233,16 @@ int aws_dynamo_json_get_table_status(const unsigned char *val, size_t len, enum 
 
 int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *body);
 
+void aws_dynamo_free_attributes(struct aws_dynamo_attribute *attributes,
+	int num_attributes);
+
+void aws_dynamo_dump_attributes(struct aws_dynamo_attribute *attributes,
+	int num_attributes);
+
+int aws_dynamo_parse_attribute_value(struct aws_dynamo_attribute *attribute, const unsigned char *val,  size_t len);
+
+/* Begin public interface. */
+
 void aws_dynamo_set_max_retries(struct aws_handle *aws, int dynamo_max_retries);
 
 void aws_dynamo_set_https(struct aws_handle *aws, int https);
@@ -255,18 +265,18 @@ void aws_dynamo_set_https_certificate_file(struct aws_handle *aws, const char *c
  */
 int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host);
 
+/**
+ * aws_dynamo_set_port() - Set the TCP port to use for DynamoDB requests.
+ * @aws:	Library handle.
+ * @port:	port number (80, 443, 8080, etc), or 0 to use the default port
+ *
+ * By default the The TCP is 80 for unencrypted (http) traffic and 443 when
+ * traffic is encruptedi, i.e. https, see aws_dynamo_set_https().
+ */
 void aws_dynamo_set_port(struct aws_handle *aws, int port);
 
 char *aws_dynamo_get_message(struct aws_handle *aws);
 int aws_dynamo_get_errno(struct aws_handle *aws);
-
-void aws_dynamo_free_attributes(struct aws_dynamo_attribute *attributes,
-	int num_attributes);
-
-void aws_dynamo_dump_attributes(struct aws_dynamo_attribute *attributes,
-	int num_attributes);
-
-int aws_dynamo_parse_attribute_value(struct aws_dynamo_attribute *attribute, const unsigned char *val,  size_t len);
 
 struct aws_dynamo_item *aws_dynamo_copy_item(struct aws_dynamo_item *item);
 
