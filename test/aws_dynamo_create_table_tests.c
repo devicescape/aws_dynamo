@@ -26,6 +26,7 @@
 #include "aws_dynamo_create_table.h"
 #include "aws_dynamo_describe_table.h"
 #include "aws_dynamo_delete_table.h"
+#include "aws_dynamo_list_tables.h"
 
 struct aws_dynamo_create_table_response *aws_dynamo_parse_create_table_response(const char *response, int response_len);
 
@@ -106,6 +107,8 @@ static void test_create_table(const char *hash_key_type, const char *range_key_t
 	\"TableName\":\"aws_dynamo_test_table_%d\"\
 }";
 	char *delete_request = NULL;
+	char *list_request = "{}";
+	struct aws_dynamo_list_tables_response *list_r;
 	struct aws_handle *aws_dynamo;
 	struct aws_dynamo_delete_table_response *delete_r;
 	time_t now = time(NULL);
@@ -174,6 +177,10 @@ static void test_create_table(const char *hash_key_type, const char *range_key_t
 		break;
 
 	} while (1);
+
+	list_r = aws_dynamo_list_tables(aws_dynamo, list_request);
+	aws_dynamo_dump_list_tables_response(list_r);
+	aws_dynamo_free_list_tables_response(list_r);
 
 	/* Now delete the table, we are done. */
 	delete_r = aws_dynamo_delete_table(aws_dynamo, delete_request);

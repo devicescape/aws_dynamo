@@ -90,6 +90,7 @@ enum {
 #define AWS_DYNAMO_JSON_COUNT					"Count"
 #define AWS_DYNAMO_JSON_SCANNED_COUNT		"ScannedCount"
 #define AWS_DYNAMO_JSON_LAST_EVALUATED_KEY	"LastEvaluatedKey"
+#define AWS_DYNAMO_JSON_LAST_EVALUATED_TABLE_NAME	"LastEvaluatedTableName"
 #define AWS_DYNAMO_JSON_HASH_KEY_ELEMENT	"HashKeyElement"
 #define AWS_DYNAMO_JSON_RANGE_KEY_ELEMENT	"RangeKeyElement"
 #define AWS_DYNAMO_JSON_UNPROCESSED_KEYS	"UnprocessedKeys"
@@ -101,6 +102,7 @@ enum {
 
 #define AWS_DYNAMO_JSON_TABLE_DESCRIPTION "TableDescription"
 #define AWS_DYNAMO_JSON_TABLE "Table"
+#define AWS_DYNAMO_JSON_TABLE_NAMES "TableNames"
 #define AWS_DYNAMO_JSON_CREATION_DATE_TIME "CreationDateTime"
 #define AWS_DYNAMO_JSON_KEY_SCHEMA "KeySchema"
 #define AWS_DYNAMO_JSON_HASHKEY_ELEMENT "HashKeyElement"
