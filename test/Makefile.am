@@ -12,5 +12,8 @@ TESTS= \
 
 noinst_PROGRAMS = $(TESTS)
 
-LDADD = $(top_builddir)/src/libaws_dynamo.la
+LDADD = $(top_builddir)/test/libaws_dynamo_test_utils.la \
+	$(top_builddir)/src/libaws_dynamo.la
 
+noinst_LTLIBRARIES = libaws_dynamo_test_utils.la
+libaws_dynamo_test_utils_la_SOURCES=test_utils.c

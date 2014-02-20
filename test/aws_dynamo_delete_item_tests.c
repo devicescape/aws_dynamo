@@ -21,9 +21,7 @@
 #include <assert.h>
 
 #include "aws_dynamo.h"
-#include "aws_dynamo_delete_item.h"
-#include "aws_dynamo_describe_table.h"
-#include "aws_dynamo_delete_table.h"
+#include "test_utils.h"
 
 struct aws_dynamo_delete_item_response *aws_dynamo_parse_delete_item_response(const char *response,
 	int response_len, struct aws_dynamo_attribute *attributes, int num_attributes);
@@ -64,13 +62,23 @@ static void test_parse_delete_item(void)
 
 	r = aws_dynamo_parse_delete_item_response(json, strlen(json), attributes, sizeof(attributes) / sizeof(attributes[0]));
 
-	aws_dynamo_dump_delete_item_response(r);
 	aws_dynamo_free_delete_item_response(r);
+}
+
+static void test_delete_item(void)
+{
+	struct aws_handle *aws_dynamo;
+
+	aws_dynamo = aws_init(NULL, NULL);
+	create_test_table(aws_dynamo, "aws_dynamo_test_delete_item", "N", NULL);
+
+	aws_deinit(aws_dynamo);
 }
 
 int main(int argc, char *argv[])
 {
 	test_parse_delete_item();
+	test_delete_item();
 
 	return 0;
 }
