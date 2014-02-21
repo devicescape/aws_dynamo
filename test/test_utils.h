@@ -25,6 +25,7 @@
 extern "C" {
 #endif
 
+int put_item(struct aws_handle *aws_dynamo, const char *table_name, struct aws_dynamo_item *item);
 int get_table_status(struct aws_handle *aws_dynamo, const char *table_name);
 void wait_for_table(struct aws_handle *aws_dynamo, const char *table_name);
 void create_test_table(struct aws_handle *aws_dynamo, const char *table_name,

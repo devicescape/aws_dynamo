@@ -24,6 +24,144 @@
 
 #include "aws_dynamo.h"
 
+/* TODO - rewrite this using something liek asprintf with realloc and concatenation. */
+
+int aws_dynamo_item_snprintf(char *buf, size_t buflen, struct aws_dynamo_attribute *attributes,
+	int num_attributes) {
+	int j;
+	int n = 0;
+	int rv;
+
+	for (j = 0; j < num_attributes; j++) {
+		struct aws_dynamo_attribute *attribute;
+		
+		attribute = &(attributes[j]);
+		switch (attribute->type) {
+			case AWS_DYNAMO_STRING: {
+				if (attribute->value.string != NULL) {
+					rv = snprintf(buf + n, buflen - n,
+						"%s\"%s\":{\""AWS_DYNAMO_JSON_TYPE_STRING"\":\"%s\"}",
+						j == 0 ? "" : ",",
+						attribute->name,
+						attribute->value.string);
+					if (rv < 0 || rv > buflen - n) {
+						printf("Truncated buffer at attribute %s.", attribute->name);
+						return -1;
+					}
+					n += rv;
+				} else {
+					printf("Attribute %s has NULL value", attribute->name);
+					return -1;
+				}
+				break;
+			}
+			case AWS_DYNAMO_NUMBER: {
+				switch (attribute->value.number.type) {
+					case AWS_DYNAMO_NUMBER_INTEGER: {
+						if (attribute->value.number.value.integer_val != NULL) {
+							rv = snprintf(buf + n, buflen - n,
+								"%s\"%s\":{\""AWS_DYNAMO_JSON_TYPE_NUMBER"\":\"%lld\"}",
+								j == 0 ? "" : ",",
+								attribute->name,
+								*(attribute->value.number.value.integer_val));
+							if (rv < 0 || rv > buflen - n) {
+								printf("Truncated buffer at attribute %s.", attribute->name);
+								return -1;
+							}
+							n += rv;
+						} else {
+							printf("Attribute %s has NULL value", attribute->name);
+							return -1;
+						}
+						break;
+					}
+					case AWS_DYNAMO_NUMBER_DOUBLE: {
+						if (attribute->value.number.value.double_val != NULL) {
+							rv = snprintf(buf + n, buflen - n,
+								"%s\"%s\":{\""AWS_DYNAMO_JSON_TYPE_NUMBER"\":\"%Lf\"}",
+								j == 0 ? "" : ",",
+								attribute->name,
+								*(attribute->value.number.value.double_val));
+							if (rv < 0 || rv > buflen - n) {
+								printf("Truncated buffer at attribute %s.", attribute->name);
+								return -1;
+							}
+							n += rv;
+						} else {
+							printf("Attribute %s has NULL value", attribute->name);
+							return -1;
+						}
+						break;
+					}
+					default: {
+						printf("Unknown number type %d",
+							attribute->value.number.type);
+						return -1;
+					}
+				}
+
+				break;
+			}
+			case AWS_DYNAMO_STRING_SET: {
+				if (attribute->value.string_set.strings != NULL) {
+					int i;
+					rv = snprintf(buf + n, buflen - n,
+						"%s\"%s\":{\""AWS_DYNAMO_JSON_TYPE_STRING_SET"\":[",
+						j == 0 ? "" : ",",
+						attribute->name);
+					if (rv < 0 || rv > buflen - n) {
+						printf("Truncated buffer at attribute %s.", attribute->name);
+						return -1;
+					}
+					n += rv;
+					for (i = 0; i < attribute->value.string_set.num_strings; i++) {
+						rv = snprintf(buf + n, buflen - n,
+							"%s\"%s\"%s",
+							i == 0 ? "" : ",",
+							attribute->value.string_set.strings[i],
+							i == attribute->value.string_set.num_strings - 1 ? "]}" : "");
+						if (rv < 0 || rv > buflen - n) {
+							printf("Truncated buffer at attribute %s.", attribute->name);
+							return -1;
+						}
+						n += rv;
+					}
+				} else {
+					printf("Attribute %s is NULL", attribute->name);
+					return -1;
+				}
+				break;
+			}
+			case AWS_DYNAMO_NUMBER_SET: {
+				/* Unimplemented. */
+				printf("aws_dynamo_dump_attributes - Number sets not implemented.");
+				break;
+			}
+			default: {
+				printf("aws_dynamo_dump_attributes - Unknown type %d",
+					attribute->type);
+				break;
+			}
+		}
+	}
+	return n;
+}
+
+int put_item(struct aws_handle *aws_dynamo, const char *table_name, struct aws_dynamo_item *item) {
+	char buffer[BUFSIZ];
+	int n = 0;
+	int rv;
+
+	rv = snprintf(buffer, sizeof(buffer), "{\"TableName\":\"%s\",\"Item\":{", table_name);
+	if (rv < 0 || rv > sizeof(buffer)) {
+		return -1;
+	}
+	n += rv;
+	rv = aws_dynamo_item_snprintf(buffer + n, sizeof(buffer) - n, item->attributes, item->num_attributes);
+	printf("%s", buffer);
+	return 0;
+}
+
 int get_table_status(struct aws_handle *aws_dynamo, const char *table_name)
 {
 	const char *describe_request_format = "{\

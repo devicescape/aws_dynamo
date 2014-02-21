@@ -68,9 +68,37 @@ static void test_parse_delete_item(void)
 static void test_delete_item(void)
 {
 	struct aws_handle *aws_dynamo;
+	aws_dynamo_integer_t hash = 1;
+	struct aws_dynamo_attribute attributes[] = {
+		{
+			.type = AWS_DYNAMO_NUMBER,
+			.name = "hash",
+			.name_len = strlen("hash"),
+			.value.number.type = AWS_DYNAMO_NUMBER_INTEGER,
+			.value.number.value.integer_val = &hash,
+		},
+/*
+		{
+			.type = AWS_DYNAMO_STRING_SET,
+			.name = "StringSet",
+			.name_len = strlen("StringSet"),
+		},
+*/
+		{
+			.type = AWS_DYNAMO_STRING,
+			.name = "String",
+			.name_len = strlen("String"),
+			.value.string = "Something"
+		},
+	};
+	struct aws_dynamo_item item = {
+		.attributes = attributes,
+		.num_attributes = sizeof(attributes) / sizeof(attributes[0])
+	};
 
 	aws_dynamo = aws_init(NULL, NULL);
 	create_test_table(aws_dynamo, "aws_dynamo_test_delete_item", "N", NULL);
+	put_item(aws_dynamo, "aws_dynamo_test_delete_item", &item);
 
 	aws_deinit(aws_dynamo);
 }
