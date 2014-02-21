@@ -174,6 +174,14 @@ struct aws_dynamo_number_set {
 	struct aws_dynamo_number *numbers;
 };
 
+/* XXX: A long long int isn't big enough in general but it
+   is big enough for our intended use. */
+typedef signed long long int aws_dynamo_integer_t;
+
+/* XXX: A long double isn't big enough in general but it
+   is big enough for our intended use. */
+typedef long double aws_dynamo_double_t;
+
 struct aws_dynamo_number {
 	/* A DynamoDB number can have up to 38 digits precision
 		and can be between 10^-128 to 10^+126. This structure
@@ -181,15 +189,9 @@ struct aws_dynamo_number {
 
 	enum aws_dynamo_number_type type;
 	union {
-		/* FIXME: It would be etter to use a typedef here so we don't
-			need to hard code 'singed long long int' anywhere. */
-  		/* XXX: A long long int isn't big enough in general but it
-			is big enough for our intended use. */
-		signed long long int *integer_val;
+		aws_dynamo_integer_t *integer_val;
 
-		/* XXX: A long double isn't big enough in general but it
-			is big enough for our intended use. */
-		long double *double_val;
+		aws_dynamo_double_t *double_val;
 
 	} value;
 };
