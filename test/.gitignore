@@ -1,4 +1,7 @@
 Makefile
 *_tests
 *.o
+*.lo
 .deps
+.libs
+*.la

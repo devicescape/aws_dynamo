@@ -17,7 +17,6 @@
  */
 #include <string.h>
 #include "aws_dynamo.h"
-#include "aws_dynamo_update_item.h"
 
 #include <assert.h>
 

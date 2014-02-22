@@ -69,6 +69,9 @@ static void test_delete_item(void)
 {
 	struct aws_handle *aws_dynamo;
 	aws_dynamo_integer_t hash = 1;
+	char *strings[] = {
+		"one", "two", "three", "four"
+	};
 	struct aws_dynamo_attribute attributes[] = {
 		{
 			.type = AWS_DYNAMO_NUMBER,
@@ -77,13 +80,13 @@ static void test_delete_item(void)
 			.value.number.type = AWS_DYNAMO_NUMBER_INTEGER,
 			.value.number.value.integer_val = &hash,
 		},
-/*
 		{
 			.type = AWS_DYNAMO_STRING_SET,
 			.name = "StringSet",
 			.name_len = strlen("StringSet"),
+			.value.string_set.num_strings = sizeof(strings) / sizeof(strings[0]),
+			.value.string_set.strings = strings,
 		},
-*/
 		{
 			.type = AWS_DYNAMO_STRING,
 			.name = "String",

@@ -17,7 +17,6 @@
  */
 #include <string.h>
 #include "aws_dynamo.h"
-#include "aws_dynamo_describe_table.h"
 
 struct aws_dynamo_describe_table_response *aws_dynamo_parse_describe_table_response(const char *response, int response_len);
 

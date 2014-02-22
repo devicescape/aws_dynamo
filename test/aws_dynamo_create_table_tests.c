@@ -23,10 +23,6 @@
 #include <assert.h>
 
 #include "aws_dynamo.h"
-#include "aws_dynamo_create_table.h"
-#include "aws_dynamo_describe_table.h"
-#include "aws_dynamo_delete_table.h"
-#include "aws_dynamo_list_tables.h"
 
 struct aws_dynamo_create_table_response *aws_dynamo_parse_create_table_response(const char *response, int response_len);
 

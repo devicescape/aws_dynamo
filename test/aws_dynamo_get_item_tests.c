@@ -18,7 +18,6 @@
 
 #include <string.h>
 #include "aws_dynamo.h"
-#include "aws_dynamo_get_item.h"
 
 #include <assert.h>
 

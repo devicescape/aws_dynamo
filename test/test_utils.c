@@ -17,14 +17,13 @@
  */
 
 #define _GNU_SOURCE
+#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 #include <assert.h>
 
 #include "aws_dynamo.h"
-
-/* TODO - rewrite this using something liek asprintf with realloc and concatenation. */
 
 int aws_dynamo_item_snprintf(char *buf, size_t buflen, struct aws_dynamo_attribute *attributes,
 	int num_attributes) {
@@ -133,7 +132,7 @@ int aws_dynamo_item_snprintf(char *buf, size_t buflen, struct aws_dynamo_attribu
 				break;
 			}
 			case AWS_DYNAMO_NUMBER_SET: {
-				/* Unimplemented. */
+				/* FIXME: Unimplemented. */
 				printf("aws_dynamo_dump_attributes - Number sets not implemented.");
 				break;
 			}
@@ -148,17 +147,33 @@ int aws_dynamo_item_snprintf(char *buf, size_t buflen, struct aws_dynamo_attribu
 }
 
 int put_item(struct aws_handle *aws_dynamo, const char *table_name, struct aws_dynamo_item *item) {
-	char buffer[BUFSIZ];
+	char put_request[BUFSIZ];
+	struct aws_dynamo_put_item_response *put_r;
 	int n = 0;
 	int rv;
 
-	rv = snprintf(buffer, sizeof(buffer), "{\"TableName\":\"%s\",\"Item\":{", table_name);
-	if (rv < 0 || rv > sizeof(buffer)) {
+	rv = snprintf(put_request + n, sizeof(put_request) - n, "{\"TableName\":\"%s\",\"Item\":{", table_name);
+	if (rv < 0 || rv > sizeof(put_request) - n) {
 		return -1;
 	}
 	n += rv;
-	rv = aws_dynamo_item_snprintf(buffer + n, sizeof(buffer) - n, item->attributes, item->num_attributes);
-	printf("%s", buffer);
+	rv = aws_dynamo_item_snprintf(put_request + n, sizeof(put_request) - n, item->attributes, item->num_attributes);
+	if (rv < 0 || rv > sizeof(put_request) - n) {
+		return -1;
+	}
+	n += rv;
+
+	rv = snprintf(put_request + n, sizeof(put_request) - n, "}}");
+	if (rv < 0 || rv > sizeof(put_request) - n) {
+		return -1;
+	}
+	n += rv;
+	
+	put_r = aws_dynamo_put_item(aws_dynamo, put_request, NULL, 0);
+	if (put_r == NULL) {
+		return -1;
+	}
+	aws_dynamo_free_put_item_response(put_r);
 	return 0;
 }
 

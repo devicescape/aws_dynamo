@@ -19,7 +19,6 @@
 #include <string.h>
 
 #include "aws_dynamo.h"
-#include "aws_dynamo_batch_get_item.h"
 
 static void test_aws_dynamo_parse_batch_get_item_response(const char *json, struct aws_dynamo_batch_get_item_response_table *tables, int num_tables)
 {

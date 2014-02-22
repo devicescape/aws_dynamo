@@ -17,7 +17,6 @@
  */
 #include <string.h>
 #include "aws_dynamo.h"
-#include "aws_dynamo_query.h"
 
 #include <assert.h>
 
