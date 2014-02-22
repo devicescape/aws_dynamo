@@ -404,7 +404,7 @@ struct aws_dynamo_delete_item_response *aws_dynamo_delete_item(struct aws_handle
 	int response_len;
 	struct aws_dynamo_delete_item_response *r;
 
-	if (aws_dynamo_request(aws, AWS_DYNAMO_GET_ITEM, request) == -1) {
+	if (aws_dynamo_request(aws, AWS_DYNAMO_DELETE_ITEM, request) == -1) {
 		return NULL;
 	}
 

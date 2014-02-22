@@ -96,10 +96,15 @@ static void test_delete_item(void)
 		.num_attributes = sizeof(attributes) / sizeof(attributes[0])
 	};
 
+	const char *delete_item_request = "{\"TableName\":\"aws_dynamo_test_delete_item\",\"Key\":{\"HashKeyElement\":{\"N\":\"1\"}}}";
+	struct aws_dynamo_delete_item_response *delete_r;
+
 	aws_dynamo = aws_init(NULL, NULL);
 	create_test_table(aws_dynamo, "aws_dynamo_test_delete_item", "N", NULL);
 	put_item(aws_dynamo, "aws_dynamo_test_delete_item", &item);
 
+	delete_r = aws_dynamo_delete_item(aws_dynamo, delete_item_request, NULL, 0);
+	aws_dynamo_free_delete_item_response(delete_r);
 	aws_deinit(aws_dynamo);
 }
 
