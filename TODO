@@ -11,8 +11,24 @@ kernel documentation style.  See the definition of aws_dynamo_set_endpoint()
 in ./src/aws_dynamo.h for an example.
 [effort: medium]
 
-- Need to finish support for number sets.
-[effort: small]
+- Need to finish support for number sets.  I think this should include changing
+the way we store numbers in the attribute structures.  There is too much
+indirection.  I am thinking at least this:
+--- a/src/aws_dynamo.h
++++ b/src/aws_dynamo.h
+@@ -189,9 +189,9 @@ struct aws_dynamo_number {
+ 
+        enum aws_dynamo_number_type type;
+        union {
+-               aws_dynamo_integer_t *integer_val;
++               aws_dynamo_integer_t integer_val;
+ 
+-               aws_dynamo_double_t *double_val;
++               aws_dynamo_double_t double_val;
+ 
+        } value;
+ };
+[effort: small, but will be an API change as described]
 
 - Need to finish support for floating point numbers.
 [effort: small]
