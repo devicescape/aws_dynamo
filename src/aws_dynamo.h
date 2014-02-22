@@ -296,6 +296,7 @@ void aws_dynamo_free_item(struct aws_dynamo_item *item);
 #include "aws_dynamo_delete_table.h"
 #include "aws_dynamo_describe_table.h"
 #include "aws_dynamo_get_item.h"
+#include "aws_dynamo_list_tables.h"
 #include "aws_dynamo_put_item.h"
 #include "aws_dynamo_query.h"
 #include "aws_dynamo_scan.h"

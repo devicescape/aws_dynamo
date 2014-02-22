@@ -28,7 +28,7 @@
 #include "aws_dynamo.h"
 #include "aws_dynamo_list_tables.h"
 
-#define DEBUG_PARSER 1
+//#define DEBUG_PARSER 1
 
 enum {
 	PARSER_STATE_NONE = 0,
@@ -392,7 +392,7 @@ void aws_dynamo_dump_list_tables_response(struct aws_dynamo_list_tables_response
 
 	Debug("%d Tables:", r->num_tables);
 	for (i = 0; i < r->num_tables; i++) {
-		Debug("%s\n", r->table_names[i]);
+		Debug("%s", r->table_names[i]);
 	}
 #endif
 }

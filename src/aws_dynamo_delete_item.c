@@ -28,7 +28,7 @@
 #include "aws_dynamo.h"
 #include "aws_dynamo_delete_item.h"
 
-#define DEBUG_PARSER 1
+//#define DEBUG_PARSER 1
 
 enum {
 	PARSER_STATE_NONE = 0,
