@@ -30,8 +30,8 @@
 
 #include "http.h"
 #include "aws.h"
-#include "aws_sts.h"
 #include "aws_iam.h"
+#include "aws_sigv4.h"
 #include "aws_dynamo.h"
 #include "aws_dynamo_query.h"
 
@@ -92,55 +92,42 @@ static char *aws_dynamo_get_canonicalized_headers(struct http_headers *headers) 
 	return canonical_headers;
 }
 
-static char *aws_dynamo_create_signature(struct aws_handle *aws, const char *headers, const char *body,
-	const void *key, int key_len)
-{
-	char *message;
-	SHA256_CTX ctx;
-	unsigned char hash[SHA256_DIGEST_LENGTH];
-
-	if (asprintf(&message, "POST\n/\n\n%s\n%s", headers, body) == -1) {
-		Warnx("aws_dynamo_create_signature: failed to create message");
-		return NULL;
-	}
-
-	SHA256_Init(&ctx);
-	SHA256_Update(&ctx, message, strlen(message));
-	SHA256_Final(hash, &ctx);
-	free(message);
-
-	return aws_create_signature(aws, hash, SHA256_DIGEST_LENGTH, key, key_len);
-}
-
 static int aws_dynamo_post(struct aws_handle *aws, const char *target, const char *body) {
 	char amz_date[128];
-	char amz_auth[256];
 	char host_header[256];
+	char authorization[256];
 	struct http_header hdrs[] = {
 		/* Note: The .name fields must all lowercase and the headers included
 			in the signature must be sorted here.  This simplifies the signature
 			calculation. */
 		{ .name = HTTP_HOST_HEADER, .value = host_header },
 		{ .name = AWS_DYNAMO_DATE_HEADER, .value = amz_date },
-		{ .name = AWS_DYNAMO_TOKEN_HEADER, .value = aws->token->session_token },
 		{ .name = AWS_DYNAMO_TARGET_HEADER, .value = target },
-		{ .name = AWS_DYNAMO_AUTH_HEADER, .value = amz_auth },
+		/* begin headers not included in signature. */
+		{ .name = AWS_DYNAMO_AUTHORIZATION_HEADER, .value = authorization },
 		{ .name = HTTP_CONTENT_TYPE_HEADER, .value = AWS_DYNAMO_CONTENT_TYPE },
 	};
 	struct http_headers headers = {
-		.count = 4, /* AWS_DYNAMO_AUTH_HEADER and HTTP_CONTENT_TYPE_HEADER are
-							not included for now since they are not used in the
-							signature calculation. */
+		.count = 3,
+		/* AWS_DYNAMO_AUTHORIZATION and HTTP_CONTENT_TYPE_HEADER are
+		   not included for now since they are not used in the
+		   signature calculation. */
 		.entries = hdrs,
 	};
+	const char *signed_headers = HTTP_HOST_HEADER ";" AWS_DYNAMO_DATE_HEADER ";" AWS_DYNAMO_TARGET_HEADER;
 	struct tm tm;
 	time_t now;
 	char *canonical_headers = NULL;
+	char *canonical_request = NULL;
+	char *string_to_sign = NULL;
 	char *signature = NULL;
 	int n;
 	char *url = NULL;
 	const char *scheme;
 	const char *host;
+	const char *aws_secret_access_key;
+	const char *aws_access_key_id;
+	char yyyy_mm_dd[16];
 
 	if (aws->dynamo_host) {
 		host = aws->dynamo_host;
@@ -160,35 +147,26 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 		return -1;
 	}
 
-	if (aws->token->expiration - now <= AWS_SESSION_REFRESH_TIME) {
+	if (aws->aws_id == NULL && aws->aws_key == NULL &&
+	    aws->token->expiration - now <= AWS_SESSION_REFRESH_TIME) {
 		struct aws_session_token *new_token;
 
-		if (aws->aws_id == NULL || aws->aws_key == NULL) {
-			new_token = aws_iam_load_default_token(aws);
-		} else {
-			new_token = aws_sts_get_session_token(aws, aws->aws_id, aws->aws_key);
-		}
+		new_token = aws_iam_load_default_token(aws);
 
 		if (new_token == NULL) {
 			Warnx("aws_dynamo_post: Failed to refresh token.");
 		} else {
-			int i;
 			struct aws_session_token *old_token;
-			
 			old_token = aws->token;
-
-			for (i = 0; i < headers.count; i++) {
-				if (strcmp(headers.entries[i].name, AWS_DYNAMO_TOKEN_HEADER) == 0) {
-					headers.entries[i].value = new_token->session_token;
-					aws->token = new_token;
-					aws_free_session_token(old_token);		
-				}
-			}
-
-			if (aws->token != new_token) {
-				Warnx("aws_dynamo_post: Failed to update session token.");
-			}
+			aws->token = new_token;
+			aws_free_session_token(old_token);   
 		}
+
+		aws_secret_access_key = aws->token->secret_access_key;
+		aws_access_key_id = aws->token->access_key_id;
+	} else {
+		aws_secret_access_key = aws->aws_key;
+		aws_access_key_id = aws->aws_id;
 	}
 
 	if (gmtime_r(&now, &tm) == NULL) {
@@ -196,8 +174,13 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 		return -1;
 	}
 
-	if (strftime(amz_date, sizeof(amz_date), "%a, %d %b %Y %H:%M:%S %z", &tm) == 0) {
+	if (strftime(amz_date, sizeof(amz_date), "%Y%m%dT%H%M%SZ", &tm) == 0) {
 		Warnx("aws_dynamo_post: Failed to format time.");
+		return -1;
+	}
+
+	if (strftime(yyyy_mm_dd, sizeof(yyyy_mm_dd), "%Y%m%d", &tm) == 0) {
+		Warnx("aws_dynamo_post: Failed to format date.");
 		return -1;
 	}
 
@@ -206,22 +189,37 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 	if (canonical_headers == NULL) {
 		Warnx("aws_dynamo_post: Failed to get canonical_headers.");
 		return -1;
-	} 
+	}
 
-	signature = aws_dynamo_create_signature(aws, canonical_headers, body,
-		aws->token->secret_access_key, strlen(aws->token->secret_access_key));
+	canonical_request = aws_sigv4_create_canonical_request("POST", "/", "",
+		canonical_headers, signed_headers, body);
+
+	if (canonical_request == NULL) {
+		Warnx("aws_dynamo_post: Failed to get canonical request.");
+		goto failure;
+	}
+
+	string_to_sign = aws_sigv4_create_string_to_sign(now,
+		"u-east-1" /* FIXME - hard coded region. */,
+		canonical_request);
+	if (string_to_sign == NULL) {
+		Warnx("aws_dynamo_post: Failed to get string to sign.");
+		goto failure;
+	}
+
+	signature = aws_sigv4_create_signature(aws_secret_access_key, string_to_sign);
 
 	if (signature == NULL) {
 		Warnx("aws_dynamo_post: Failed to get signature.");
 		goto failure;
 	}
 
-	n = snprintf(amz_auth, sizeof(amz_auth),
-		"AWS3 AWSAccessKeyId=%s,Algorithm=HmacSHA256,SignedHeaders="HTTP_HOST_HEADER ";"AWS_DYNAMO_DATE_HEADER ";"AWS_DYNAMO_TARGET_HEADER ";"AWS_DYNAMO_TOKEN_HEADER",Signature=%s",
-		aws->token->access_key_id, signature);
-		
-	if (n == -1 || n >= sizeof(amz_auth)) {
-		Warnx("aws_dynamo_post: amz auth truncated");
+	n = snprintf(authorization, sizeof(authorization),
+		/* FIXME - hard coded region. */
+		"AWS4-HMAC-SHA256 Credential=%s/%s/us-east-1/dynamodb/aws4_request, SignedHeaders=%s, Signature=%s", aws_access_key_id, yyyy_mm_dd, signed_headers, signature);
+
+	if (n == -1 || n >= sizeof(authorization)) {
+		Warnx("aws_dynamo_post: authorization truncated");
 		goto failure;
 	}
 
@@ -268,12 +266,16 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 #endif
 
 	free(canonical_headers);
+	free(canonical_request);
+	free(string_to_sign);
 	free(signature);
 	free(url);
 
 	return 0;
 failure:
 	free(canonical_headers);
+	free(canonical_request);
+	free(string_to_sign);
 	free(signature);
 	free(url);
 

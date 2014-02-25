@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2014 Devicescape Software, Inc.
+ * Copyright (c) 2014 Devicescape Software, Inc.
  * This file is part of aws_dynamo, a C library for AWS DynamoDB.
  *
  * aws_dynamo is free software: you can redistribute it and/or modify
@@ -16,18 +16,22 @@
  * along with aws_dynamo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _AWS_STS_H_
-#define _AWS_STS_H_
+#ifndef _AWS_SIGV4_H_
+#define _AWS_SIGV4_H_
 
-#include <time.h>
-#include "aws.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#define AWS_STS_HOST "sts.amazonaws.com"
+char *aws_sigv4_create_canonical_request(const char *http_request_method,
+	const char *canonical_uri, const char *canonical_query_string,
+	const char *canonical_headers, const char *signed_headers,
+	const char *request_payload);
 
-#define AWS_STS_SESSION_DURATION	"3600" /* seconds */
+char *aws_sigv4_create_string_to_sign(time_t request_date,
+	const char *region, const char *canonical_request);
 
-struct aws_session_token *aws_sts_get_session_token(struct aws_handle *aws,
-	const char *aws_id, const char *key);
+char *aws_sigv4_create_signature(const char *aws_secret_access_key,
+	const char *string_to_sign);
 
-
-#endif /* _AWS_STS_H_ */
+#endif /* _AWS_SIGV4_H_ */

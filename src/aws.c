@@ -20,7 +20,6 @@
 
 #include "aws_dynamo_utils.h"
 #include "http.h"
-#include "aws_sts.h"
 #include "aws_dynamo.h"
 #include "aws_iam.h"
 #include "aws.h"
@@ -86,13 +85,6 @@ struct aws_handle *aws_init(const char *aws_id, const char *aws_key) {
 			Errx("aws_init: Failed to copy id.");
 			goto error;
 		}
-
-		aws->token = aws_sts_get_session_token(aws,
-			aws->aws_id, aws->aws_key);
-		if (aws->token == NULL) {
-			Errx("aws_init: Failed to get session token.");
-			goto error;
-		}
 	}
 
 	HMAC_CTX_init(&(aws->hmac_ctx));
@@ -126,74 +118,6 @@ void aws_deinit(struct aws_handle *aws) {
 
 		free(aws);
 	}
-}
-
-static char *base64_encode(unsigned char *in, int in_len, size_t *out_len) {
-	BIO *bio = NULL, *b64 = NULL;
-	char *out = NULL;
-	FILE *fp;
-
-	fp = open_memstream(&out, out_len);
-
-	if (fp == NULL) {
-		goto error;
-	}
-
-	b64 = BIO_new(BIO_f_base64());
-	if (b64 == NULL) {
-		goto error;
-	}
-	bio = BIO_new_fp(fp, BIO_NOCLOSE);
-	if (bio == NULL) {
-		goto error;
-	}
-	bio = BIO_push(b64, bio);
-	if (BIO_write(bio, in, in_len) <= 0) {
-		goto error;
-	}
-	if (BIO_flush(bio) != 1) {
-		goto error;
-	}
-	BIO_free_all(bio);
-	fclose(fp);
-
-	return out;
-error:
-	Warnx("Failed to base64 encode data.");
-	if (bio) {
-		BIO_free(bio);
-	}
-	if (b64) {
-		BIO_free(b64);
-	}
-	free(out);
-	return NULL;
-}
-
-char *aws_create_signature(struct aws_handle *aws, const unsigned char *message,
-	int message_len, const void *key, int key_len)
-{
-	unsigned char md[EVP_MAX_MD_SIZE];
-	unsigned int md_len;
-	char *signature;
-	size_t encoded_len;
-
-	HMAC_Init_ex(&(aws->hmac_ctx), key, key_len, EVP_sha256(), NULL);
-	HMAC_Update(&(aws->hmac_ctx), message, message_len);
-	HMAC_Final(&(aws->hmac_ctx), md, &md_len);
-	
-	signature = base64_encode(md, md_len, &encoded_len);
-
-	if (signature == NULL) {
-		return NULL;
-	}
-
-	/* remove newline. */
-	signature[encoded_len - 1] = '\0';
-
-	HMAC_CTX_cleanup(&(aws->hmac_ctx));
-
-	return signature;
 }
 
 time_t aws_parse_iso8601_date(char *str) {

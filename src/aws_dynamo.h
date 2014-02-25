@@ -29,6 +29,7 @@ extern "C" {
 
 /* AWS DynamoDB HTTP headers names.  These are all lowercase
 	to simplify the signature calculation. */
+#define AWS_DYNAMO_AUTHORIZATION_HEADER	"authorization"
 #define AWS_DYNAMO_DATE_HEADER	"x-amz-date"
 #define AWS_DYNAMO_AUTH_HEADER	"x-amzn-authorization"
 #define AWS_DYNAMO_TARGET_HEADER	"x-amz-target"

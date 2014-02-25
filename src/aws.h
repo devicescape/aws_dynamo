@@ -57,8 +57,6 @@ struct aws_handle *aws_init(const char *aws_id, const char *aws_key);
 
 void aws_deinit(struct aws_handle *aws);
 
-char *aws_create_signature(struct aws_handle *aws, const unsigned char *message, int message_len, const void *key, int key_len);
-
 time_t aws_parse_iso8601_date(char *str);
 
 void aws_free_session_token(struct aws_session_token *token);
