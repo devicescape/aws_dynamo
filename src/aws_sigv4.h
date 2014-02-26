@@ -19,19 +19,32 @@
 #ifndef _AWS_SIGV4_H_
 #define _AWS_SIGV4_H_
 
+#include <time.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-char *aws_sigv4_create_canonical_request(const char *http_request_method,
+char *aws_sigv4_create_hashed_canonical_request(const char *http_request_method,
 	const char *canonical_uri, const char *canonical_query_string,
 	const char *canonical_headers, const char *signed_headers,
 	const char *request_payload);
 
-char *aws_sigv4_create_string_to_sign(time_t request_date,
-	const char *region, const char *canonical_request);
+char *aws_sigv4_create_string_to_sign(char *iso8601_basic_date,
+	char *yyyy_mm_dd, const char *region, const char *service,
+	const char *hashed_canonical_request);
 
 char *aws_sigv4_create_signature(const char *aws_secret_access_key,
-	const char *string_to_sign);
+	const char *yyyy_mm_dd,
+	const char *region, const char *service,
+	const unsigned char *message);
+
+char *aws_sigv4_derive_signing_key(const char *aws_secret_access_key,
+	const char *yyyy_mm_dd, const char *region, const char *service,
+	unsigned char **key, int *key_len);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _AWS_SIGV4_H_ */

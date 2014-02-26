@@ -8,7 +8,8 @@ TESTS= \
 	aws_dynamo_get_item_tests \
 	aws_dynamo_query_tests \
 	aws_dynamo_scan_tests \
-	aws_dynamo_update_item_tests
+	aws_dynamo_update_item_tests \
+	aws_sigv4_test
 
 noinst_PROGRAMS = $(TESTS)
 

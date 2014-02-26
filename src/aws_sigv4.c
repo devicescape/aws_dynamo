@@ -27,7 +27,7 @@
 #include <string.h>
 #include <time.h>
 
-char *aws_sigv4_create_canonical_request(const char *http_request_method,
+char *aws_sigv4_create_hashed_canonical_request(const char *http_request_method,
 					 const char *canonical_uri,
 					 const char *canonical_query_string,
 					 const char *canonical_headers,
@@ -35,61 +35,48 @@ char *aws_sigv4_create_canonical_request(const char *http_request_method,
 					 const char *request_payload)
 {
 	SHA256_CTX ctx;
-	unsigned char hashed_request_payload[SHA256_DIGEST_LENGTH];
+	unsigned char hash[SHA256_DIGEST_LENGTH];
+	int i;
+	unsigned char hex_hash[SHA256_DIGEST_LENGTH * 2 + 1];
 	char *canonical_request;
 
 	SHA256_Init(&ctx);
-	// XXX: Can we avoid this strlen() call?  Or reuse the result?
 	SHA256_Update(&ctx, request_payload, strlen(request_payload));
-	SHA256_Final(hashed_request_payload, &ctx);
-	/* TODO - Need to hex encode hash_payload, or is it already hex encoded? */
+	SHA256_Final(hash, &ctx);
+
+	for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+		sprintf(hex_hash + i * 2, "%.2x", hash[i]);
+	}
 
 	if (asprintf(&canonical_request, "%s\n%s\n%s\n%s\n%s\n%s", http_request_method,
 	     canonical_uri, canonical_query_string, canonical_headers,
-	     signed_headers, hashed_request_payload) == -1) {
+	     signed_headers, hex_hash) == -1) {
 		Warnx("aws_dynamo_create_signature: failed to create message");
-		return NULL;
-	}
-
-	return canonical_request;
-}
-
-char *aws_sigv4_create_string_to_sign(time_t request_date,
-				      const char *region,
-				      const char *canonical_request)
-{
-	struct tm tm;
-	char iso8601_basic_date[32];
-	char yyyy_mm_dd[16];
-	unsigned char hashed_canonical_request[SHA256_DIGEST_LENGTH];
-	SHA256_CTX ctx;
-	char *string_to_sign;
-
-	/* FIXME - can reuse iso8601_basic_date from amz_date header. */
-	if (gmtime_r(&request_date, &tm) == NULL) {
-		Warnx("aws_sigv4_create_string_to_sign: Failed to get time structure.");
-		return NULL;
-	}
-
-	if (strftime(iso8601_basic_date, sizeof(iso8601_basic_date),
-		     "%Y%m%dT%H%M%SZ", &tm) == 0) {
-		Warnx("aws_sigv4_create_string_to_sign: Failed to format time.");
-		return NULL;
-	}
-
-	/* FIXME - can use yyyymmdd constructed by caller. */
-	if (strftime(yyyy_mm_dd, sizeof(yyyy_mm_dd), "%Y%m%d", &tm) == 0) {
-		Warnx("aws_sigv4_create_string_to_sign: Failed to format date.");
 		return NULL;
 	}
 
 	SHA256_Init(&ctx);
 	SHA256_Update(&ctx, canonical_request, strlen(canonical_request));
-	SHA256_Final(hashed_canonical_request, &ctx);
+	SHA256_Final(hash, &ctx);
+
+	for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
+		sprintf(hex_hash + i * 2, "%.2x", hash[i]);
+	}
+
+	return strdup(hex_hash);
+}
+
+char *aws_sigv4_create_string_to_sign(char *iso8601_basic_date,
+				      char *yyyy_mm_dd,
+				      const char *region,
+				      const char *service,
+				      const char *hashed_canonical_request)
+{
+	char *string_to_sign;
 
 	if (asprintf(&string_to_sign,
-	     "AWS4-HMAC-SHA256\n%s\n%s/%s/dynamodb/aws4_request\n%s",
-	     iso8601_basic_date, yyyy_mm_dd, region,
+	     "AWS4-HMAC-SHA256\n%s\n%s/%s/%s/aws4_request\n%s",
+	     iso8601_basic_date, yyyy_mm_dd, region, service,
 	     hashed_canonical_request) == -1) {
 		Warnx("aws_dynamo_create_signature: failed to create string to sign.");
 		return NULL;
@@ -98,46 +85,91 @@ char *aws_sigv4_create_string_to_sign(time_t request_date,
 	return string_to_sign;
 }
 
-static char *aws_sigv4_derive_signing_key(struct aws_handle *aws,
-	const char *aws_secret_access_key,
-	time_t date, const char *region, const char *service, const void **key,
-	int *key_len)
-{
-	// TODO = implement this
-
-	return NULL;
-}
-
-char *aws_sigv4_create_signature(struct aws_handle *aws,
-	const char *aws_secret_access_key, const unsigned char *message)
+int aws_sigv4_derive_signing_key(
+	const char *aws_secret_access_key, const char *yyyy_mm_dd,
+	const char *region, const char *service, unsigned char **key /* OUT */,
+	int *key_len /* OUT */)
 {
 	unsigned char md[EVP_MAX_MD_SIZE];
 	unsigned int md_len;
+	unsigned char date_key[128];
+	int n;
+	HMAC_CTX hmac_ctx;
+
+	HMAC_CTX_init(&hmac_ctx);
+
+	n = snprintf(date_key, sizeof(date_key), "AWS4%s",
+		aws_secret_access_key);
+
+	if (n < 0 || n > sizeof(date_key)) {
+		Warnx("aws_sigv4_derive_signing_key: did not create date key.");
+		return -1;
+	}
+
+	HMAC_Init_ex(&hmac_ctx, date_key, strlen(date_key), EVP_sha256(), NULL);
+	HMAC_Update(&hmac_ctx, yyyy_mm_dd, strlen(yyyy_mm_dd));
+	HMAC_Final(&hmac_ctx, md, &md_len);
+	
+	HMAC_Init_ex(&hmac_ctx, md, md_len, EVP_sha256(), NULL);
+	HMAC_Update(&hmac_ctx, region, strlen(region));
+	HMAC_Final(&hmac_ctx, md, &md_len);
+	
+	HMAC_Init_ex(&hmac_ctx, md, md_len, EVP_sha256(), NULL);
+	HMAC_Update(&hmac_ctx, service, strlen(service));
+	HMAC_Final(&hmac_ctx, md, &md_len);
+	
+	HMAC_Init_ex(&hmac_ctx, md, md_len, EVP_sha256(), NULL);
+	HMAC_Update(&hmac_ctx, "aws4_request", strlen("aws4_request"));
+	HMAC_Final(&hmac_ctx, md, &md_len);
+	
+	HMAC_CTX_cleanup(&hmac_ctx);
+
+	*key = malloc(md_len);
+	if (*key == NULL) {
+		Warnx("aws_sigv4_derive_signing_key: key alloc failed.");
+		return -1;
+	}
+	memcpy(*key, md, md_len);
+	*key_len = md_len;
+	return 0;
+}
+
+char *aws_sigv4_create_signature(
+	const char *aws_secret_access_key, const char *yyyy_mm_dd,
+	const char *region, const char *service,
+	const unsigned char *message)
+{
+	HMAC_CTX hmac_ctx;
+	unsigned char md[EVP_MAX_MD_SIZE];
+	unsigned int md_len;
 	char *signature;
-	size_t encoded_len;
 	int message_len = strlen(message);
-	const void *key = NULL;
+	unsigned char *key = NULL;
 	int key_len = 0;
+	int i;
 
-	aws_sigv4_derive_signing_key(aws, aws_secret_access_key,
-	0 /* FIXME date */, "us-east-1" /* FIXME - hard coded region */,
-	"dynamodb" /* FIXME - hard coded region */, &key, &key_len);
+	HMAC_CTX_init(&hmac_ctx);
 
-	HMAC_Init_ex(&(aws->hmac_ctx), key, key_len, EVP_sha256(), NULL);
-	HMAC_Update(&(aws->hmac_ctx), message, message_len);
-	HMAC_Final(&(aws->hmac_ctx), md, &md_len);
+	aws_sigv4_derive_signing_key(aws_secret_access_key,
+		yyyy_mm_dd, region, service, &key, &key_len);
 
-	/* TODO - Don't use base64 encoding, use hex encoding. */	
-	signature = NULL;// base64_encode(md, md_len, &encoded_len);
+	HMAC_Init_ex(&hmac_ctx, key, key_len, EVP_sha256(), NULL);
+	HMAC_Update(&hmac_ctx, message, message_len);
+	HMAC_Final(&hmac_ctx, md, &md_len);
+
+	signature = malloc(md_len * 2 + 1);
 
 	if (signature == NULL) {
+		Warnx("aws_sigv4_create_signature: failed to allocate sig");
+		HMAC_CTX_cleanup(&hmac_ctx);
 		return NULL;
 	}
 
-	/* remove newline. */
-	signature[encoded_len - 1] = '\0';
+	for (i = 0; i < md_len; i++) {
+		sprintf(signature + i * 2, "%.2x", md[i]);
+	}
 
-	HMAC_CTX_cleanup(&(aws->hmac_ctx));
+	HMAC_CTX_cleanup(&hmac_ctx);
 
 	return signature;
 }

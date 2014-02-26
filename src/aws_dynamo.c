@@ -93,7 +93,7 @@ static char *aws_dynamo_get_canonicalized_headers(struct http_headers *headers) 
 }
 
 static int aws_dynamo_post(struct aws_handle *aws, const char *target, const char *body) {
-	char amz_date[128];
+	char iso8601_basic_date[128];
 	char host_header[256];
 	char authorization[256];
 	struct http_header hdrs[] = {
@@ -101,7 +101,7 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 			in the signature must be sorted here.  This simplifies the signature
 			calculation. */
 		{ .name = HTTP_HOST_HEADER, .value = host_header },
-		{ .name = AWS_DYNAMO_DATE_HEADER, .value = amz_date },
+		{ .name = AWS_DYNAMO_DATE_HEADER, .value = iso8601_basic_date },
 		{ .name = AWS_DYNAMO_TARGET_HEADER, .value = target },
 		/* begin headers not included in signature. */
 		{ .name = AWS_DYNAMO_AUTHORIZATION_HEADER, .value = authorization },
@@ -118,7 +118,7 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 	struct tm tm;
 	time_t now;
 	char *canonical_headers = NULL;
-	char *canonical_request = NULL;
+	char *hashed_canonical_request = NULL;
 	char *string_to_sign = NULL;
 	char *signature = NULL;
 	int n;
@@ -174,7 +174,8 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 		return -1;
 	}
 
-	if (strftime(amz_date, sizeof(amz_date), "%Y%m%dT%H%M%SZ", &tm) == 0) {
+	if (strftime(iso8601_basic_date, sizeof(iso8601_basic_date),
+		     "%Y%m%dT%H%M%SZ", &tm) == 0) {
 		Warnx("aws_dynamo_post: Failed to format time.");
 		return -1;
 	}
@@ -191,23 +192,29 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 		return -1;
 	}
 
-	canonical_request = aws_sigv4_create_canonical_request("POST", "/", "",
+	hashed_canonical_request = aws_sigv4_create_hashed_canonical_request("POST", "/", "",
 		canonical_headers, signed_headers, body);
 
-	if (canonical_request == NULL) {
+	if (hashed_canonical_request == NULL) {
 		Warnx("aws_dynamo_post: Failed to get canonical request.");
 		goto failure;
 	}
 
-	string_to_sign = aws_sigv4_create_string_to_sign(now,
+	string_to_sign = aws_sigv4_create_string_to_sign(
+		iso8601_basic_date, yyyy_mm_dd,
 		"u-east-1" /* FIXME - hard coded region. */,
-		canonical_request);
+		"dynamodb" /* FIXME - hard coded service. */, 
+		hashed_canonical_request);
 	if (string_to_sign == NULL) {
 		Warnx("aws_dynamo_post: Failed to get string to sign.");
 		goto failure;
 	}
 
-	signature = aws_sigv4_create_signature(aws_secret_access_key, string_to_sign);
+	signature = aws_sigv4_create_signature(aws_secret_access_key,
+		yyyy_mm_dd, 
+		"u-east-1" /* FIXME - hard coded region. */,
+		"dynamodb" /* FIXME - hard coded service. */, 
+		string_to_sign);
 
 	if (signature == NULL) {
 		Warnx("aws_dynamo_post: Failed to get signature.");
@@ -215,8 +222,8 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 	}
 
 	n = snprintf(authorization, sizeof(authorization),
-		/* FIXME - hard coded region. */
-		"AWS4-HMAC-SHA256 Credential=%s/%s/us-east-1/dynamodb/aws4_request, SignedHeaders=%s, Signature=%s", aws_access_key_id, yyyy_mm_dd, signed_headers, signature);
+		/* FIXME - hard coded region and service. */
+		"AWS4-HMAC-SHA256 Credential=%s/%s/us-east-1/dynamodb/aws4_request,SignedHeaders=%s,Signature=%s", aws_access_key_id, yyyy_mm_dd, signed_headers, signature);
 
 	if (n == -1 || n >= sizeof(authorization)) {
 		Warnx("aws_dynamo_post: authorization truncated");
@@ -266,7 +273,7 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 #endif
 
 	free(canonical_headers);
-	free(canonical_request);
+	free(hashed_canonical_request);
 	free(string_to_sign);
 	free(signature);
 	free(url);
@@ -274,7 +281,7 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 	return 0;
 failure:
 	free(canonical_headers);
-	free(canonical_request);
+	free(hashed_canonical_request);
 	free(string_to_sign);
 	free(signature);
 	free(url);
