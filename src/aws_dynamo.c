@@ -202,7 +202,7 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 
 	string_to_sign = aws_sigv4_create_string_to_sign(
 		iso8601_basic_date, yyyy_mm_dd,
-		"u-east-1" /* FIXME - hard coded region. */,
+		"us-east-1" /* FIXME - hard coded region. */,
 		"dynamodb" /* FIXME - hard coded service. */, 
 		hashed_canonical_request);
 	if (string_to_sign == NULL) {
@@ -212,7 +212,7 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 
 	signature = aws_sigv4_create_signature(aws_secret_access_key,
 		yyyy_mm_dd, 
-		"u-east-1" /* FIXME - hard coded region. */,
+		"us-east-1" /* FIXME - hard coded region. */,
 		"dynamodb" /* FIXME - hard coded service. */, 
 		string_to_sign);
 
