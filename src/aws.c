@@ -87,8 +87,6 @@ struct aws_handle *aws_init(const char *aws_id, const char *aws_key) {
 		}
 	}
 
-	HMAC_CTX_init(&(aws->hmac_ctx));
-
 	aws->dynamo_max_retries = AWS_DYNAMO_DEFAULT_MAX_RETRIES;
 	aws->dynamo_https = AWS_DYNAMO_DEFAULT_HTTPS;
 	aws->dynamo_host = NULL;
