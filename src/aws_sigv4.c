@@ -59,6 +59,8 @@ char *aws_sigv4_create_hashed_canonical_request(const char *http_request_method,
 	SHA256_Update(&ctx, canonical_request, strlen(canonical_request));
 	SHA256_Final(hash, &ctx);
 
+	free(canonical_request);
+
 	for (i = 0; i < SHA256_DIGEST_LENGTH; i++) {
 		sprintf(hex_hash + i * 2, "%.2x", hash[i]);
 	}
@@ -156,7 +158,7 @@ char *aws_sigv4_create_signature(
 	HMAC_Init_ex(&hmac_ctx, key, key_len, EVP_sha256(), NULL);
 	HMAC_Update(&hmac_ctx, message, message_len);
 	HMAC_Final(&hmac_ctx, md, &md_len);
-
+	free(key);
 	signature = malloc(md_len * 2 + 1);
 
 	if (signature == NULL) {
