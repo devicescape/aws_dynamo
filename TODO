@@ -57,10 +57,6 @@ API update.  It is important to take advantage of this header
   any depth.
 [effort: large]
 
-- Change aws.c:base64_encode() to not use open_memstream() since open_memstream()
-  isn't portable.  Instead, use an openssl mem buffer, see BIO_s_mem(3) for details.
-[effort: small]
-
 - extract x-amzn-RequestId header and include it in error messages
 [effort: small]
 
