@@ -25,6 +25,7 @@ pkginclude_HEADERS=\
 	aws_dynamo_delete_table.h \
 	aws_dynamo_describe_table.h \
 	aws_dynamo_get_item.h \
+	aws_dynamo_list_tables.h \
 	aws_dynamo.h \
 	aws_dynamo_put_item.h \
 	aws_dynamo_query.h \
