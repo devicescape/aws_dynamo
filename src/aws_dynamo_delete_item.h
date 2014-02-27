@@ -42,4 +42,8 @@ void aws_dynamo_free_delete_item_response(struct aws_dynamo_delete_item_response
 
 void aws_dynamo_dump_delete_item_response(struct aws_dynamo_delete_item_response *r);
 
+#ifdef  __cplusplus
+}
+#endif
+
 #endif /* _AWS_DYNAMO_DELETE_ITEM_H_ */
