@@ -32,7 +32,7 @@ struct aws_dynamo_batch_write_item_consumed_capacity {
 
 struct aws_dynamo_batch_write_item_response {
 	int num_responses;
-	struct aws_dynamo_batch_write_item_consumed_capacity {
+	struct aws_dynamo_batch_write_item_consumed_capacity *responses;
 	char *unprocessed_items;
 };
 
