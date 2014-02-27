@@ -12,8 +12,6 @@ AC_CHECK_LIB([yajl], [yajl_alloc],,
 				 AC_MSG_ERROR([no libyajl; please install yajl or equivalent]))
 AC_CHECK_LIB([curl], [curl_easy_perform],,
 				 AC_MSG_ERROR([no curl; please install curl or equivalent]))
-AC_CHECK_LIB([expat], [XML_ParserCreate],,
-				 AC_MSG_ERROR([no libexpat; please install libexpat or equivalent]))
 
 LOCAL_CFLAGS="-Wall -Wno-pointer-sign"
 AC_ARG_ENABLE([debug], [  --enable-debug    Turn on debugging],
