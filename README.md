@@ -1,7 +1,7 @@
 aws_dynamo
 ==========
 
-AWS DynamoDB Library for C
+AWS DynamoDB Library for C and C++
 
 Features
 ========
@@ -29,7 +29,6 @@ Dependancies
 
 * libcurl - for http support, http://curl.haxx.se/libcurl/
 * libyajl - for json parsing, http://lloyd.github.io/yajl/
-* expat - for xml parsing, http://expat.sourceforge.net/
 * openssl - for general purpose crypto functions, https://www.openssl.org/
 
 Building
@@ -54,7 +53,7 @@ $ sudo make install
 Basic Usage
 ===========
 
-See the examples/ subdirectory for detailed example.
+See the examples/ subdirectory for detailed examples.
 
 Get item attributes from DynamoDB.  Assume we have a table named
 'users' with a string hash key and attributes 'realName'
