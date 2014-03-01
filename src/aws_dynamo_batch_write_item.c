@@ -33,6 +33,7 @@ enum {
 	PARSER_STATE_NONE = 0,
 	PARSER_STATE_ROOT_MAP,
 	PARSER_STATE_RESPONSES_KEY,
+	PARSER_STATE_RESPONSES_MAP,
 	PARSER_STATE_TABLE_NAME_KEY,
 	PARSER_STATE_TABLE_NAME_MAP,
 	PARSER_STATE_CONSUMED_CAPACITY_KEY,
@@ -43,6 +44,7 @@ static const char *parser_state_strings[] = {
 	"none",
 	"root map",
 	"responses key",
+	"responses map",
 	"table name key",
 	"table name map",
 	"consumed capacity key",
@@ -52,7 +54,8 @@ static const char *parser_state_strings[] = {
 static const char *parser_state_string(int state)
 {
 	if (state < 0 ||
-	    state > sizeof(parser_state_strings) / sizeof(parser_state_strings[0])) {
+	    state >
+	    sizeof(parser_state_strings) / sizeof(parser_state_strings[0])) {
 		return "invalid state";
 	} else {
 		return parser_state_strings[state];
@@ -77,6 +80,17 @@ static int handle_number(void *ctx, const char *val, unsigned int len)
 #endif				/* DEBUG_PARSER */
 
 	switch (_ctx->parser_state) {
+	case PARSER_STATE_CONSUMED_CAPACITY_KEY:{
+			if (aws_dynamo_json_get_double(val, len,
+						       &(_ctx->
+							 r->responses[_ctx->
+								      r->num_responses].consumed_capacity_units))
+			    == -1) {
+				return 0;
+			}
+		_ctx->parser_state = PARSER_STATE_TABLE_NAME_MAP;
+		}
+		break;
 	default:{
 			Warnx("handle_number - unexpected state '%s'",
 			      parser_state_string(_ctx->parser_state));
@@ -105,40 +119,6 @@ static int handle_string(void *ctx, const unsigned char *val, unsigned int len)
 #endif				/* DEBUG_PARSER */
 
 	switch (_ctx->parser_state) {
-#if 0
-	case PARSER_STATE_LAST_EVALUATED_TABLE_NAME_KEY:{
-			free(_ctx->r->last_evaluated_table_name);
-			_ctx->r->last_evaluated_table_name = strndup(val, len);
-			if (_ctx->r->last_evaluated_table_name == NULL) {
-				Warnx("handle_string - failed to allocate last evaluated table name");
-				return 0;
-			}
-			_ctx->parser_state = PARSER_STATE_ROOT_MAP;
-			break;
-		}
-	case PARSER_STATE_TABLE_NAMES_ARRAY:{
-			char *table_name;
-			char **new_table_names;
-
-			table_name = strndup(val, len);
-			if (table_name == NULL) {
-				Warnx("handle_string - failed to allocate table name");
-				return 0;
-			}
-
-			new_table_names = realloc(_ctx->r->table_names,
-						  sizeof(_ctx->r->table_names[0]) * (_ctx->r->num_tables + 1));
-			if (new_table_names == NULL) {
-				Warnx("handle_string - failed to allocate new table names");
-				free(table_name);
-				return 0;
-			}
-			_ctx->r->table_names = new_table_names;
-			_ctx->r->table_names[_ctx->r->num_tables] = table_name;
-			_ctx->r->num_tables++;
-			break;
-		}
-#endif
 	default:{
 			Warnx("handle_string - unexpected state '%s'",
 			      parser_state_string(_ctx->parser_state));
@@ -165,12 +145,18 @@ static int handle_start_map(void *ctx)
 #endif				/* DEBUG_PARSER */
 
 	switch (_ctx->parser_state) {
-#if 0
 	case PARSER_STATE_NONE:{
 			_ctx->parser_state = PARSER_STATE_ROOT_MAP;
 			break;
 		}
-#endif
+	case PARSER_STATE_RESPONSES_KEY:{
+			_ctx->parser_state = PARSER_STATE_RESPONSES_MAP;
+			break;
+		}
+	case PARSER_STATE_TABLE_NAME_KEY:{
+			_ctx->parser_state = PARSER_STATE_TABLE_NAME_MAP;
+			break;
+		}
 	default:{
 			Warnx("handle_start_map - unexpected state: %s",
 			      parser_state_string(_ctx->parser_state));
@@ -198,19 +184,48 @@ static int handle_map_key(void *ctx, const unsigned char *val, unsigned int len)
 #endif				/* DEBUG_PARSER */
 
 	switch (_ctx->parser_state) {
-#if 0
 	case PARSER_STATE_ROOT_MAP:{
-			if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_LAST_EVALUATED_TABLE_NAME, val, len)) {
-				_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_TABLE_NAME_KEY;
-			} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_TABLE_NAMES, val, len)) {
-				_ctx->parser_state = PARSER_STATE_TABLE_NAMES_KEY;
+			if (AWS_DYNAMO_VALCMP
+			    (AWS_DYNAMO_JSON_RESPONSES, val, len)) {
+				_ctx->parser_state = PARSER_STATE_RESPONSES_KEY;
+			} else
+			    if (AWS_DYNAMO_VALCMP
+				(AWS_DYNAMO_JSON_UNPROCESSED_ITEMS, val, len)) {
+				_ctx->parser_state =
+				    PARSER_STATE_UNPROCESSED_ITEMS_KEY;
 			} else {
 				Warnx("handle_map_key: Unknown key.");
 				return 0;
 			}
 			break;
 		}
-#endif
+	case PARSER_STATE_RESPONSES_MAP:{
+			char *table_name = strndup(val, len);
+			struct aws_dynamo_batch_write_item_consumed_capacity *new_responses;
+
+			if (table_name == NULL) {
+				Warnx("handle_map_key: alloc failed.");
+				return 0;
+			}
+
+			new_responses = realloc(_ctx->r->responses,
+				_ctx->r->num_responses + 1 * sizeof(_ctx->r->responses[0]));
+			if (new_responses == NULL) {
+				Warnx("handle_map_key: realloc failed.");
+				free(table_name);
+				return 0;
+			}
+			_ctx->r->responses = new_responses;
+			_ctx->r->responses[_ctx->r->num_responses].table_name =
+			    table_name;
+			_ctx->r->num_responses += 1;
+			_ctx->parser_state = PARSER_STATE_TABLE_NAME_KEY;
+			break;
+		}
+	case PARSER_STATE_TABLE_NAME_MAP:{
+			_ctx->parser_state = PARSER_STATE_CONSUMED_CAPACITY_KEY;
+			break;
+		}
 	default:{
 			Warnx("handle_map_key - unexpected state: %s",
 			      parser_state_string(_ctx->parser_state));
@@ -234,12 +249,14 @@ static int handle_end_map(void *ctx)
 	      parser_state_string(_ctx->parser_state));
 #endif				/* DEBUG_PARSER */
 	switch (_ctx->parser_state) {
-#if 0
 	case PARSER_STATE_ROOT_MAP:{
 			_ctx->parser_state = PARSER_STATE_NONE;
 			break;
 		}
-#endif
+	case PARSER_STATE_TABLE_NAME_MAP:{
+			_ctx->parser_state = PARSER_STATE_RESPONSES_MAP;
+			break;
+		}
 	default:{
 			Warnx("handle_end_map - unexpected state: %s",
 			      parser_state_string(_ctx->parser_state));
@@ -264,15 +281,10 @@ static int handle_start_array(void *ctx)
 #endif				/* DEBUG_PARSER */
 
 	switch (_ctx->parser_state) {
-#if 0
-	case PARSER_STATE_TABLE_NAMES_KEY:{
-			_ctx->parser_state = PARSER_STATE_TABLE_NAMES_ARRAY;
-			break;
-		}
-#endif
 	default:{
-			Warnx("handle_start_array - unexpected state '%s'",
-			      parser_state_string(_ctx->parser_state));
+			Warnx
+			    ("handle_start_array - unexpected state '%s'",
+			     parser_state_string(_ctx->parser_state));
 			return 0;
 			break;
 		}
@@ -295,15 +307,10 @@ static int handle_end_array(void *ctx)
 #endif				/* DEBUG_PARSER */
 
 	switch (_ctx->parser_state) {
-#if 0
-	case PARSER_STATE_TABLE_NAMES_ARRAY:{
-			_ctx->parser_state = PARSER_STATE_ROOT_MAP;
-			break;
-		}
-#endif
 	default:{
-			Warnx("handle_end_array - unexpected state '%s'",
-			      parser_state_string(_ctx->parser_state));
+			Warnx
+			    ("handle_end_array - unexpected state '%s'",
+			     parser_state_string(_ctx->parser_state));
 			return 0;
 			break;
 		}
@@ -328,7 +335,8 @@ static yajl_callbacks handle_callbacks = {
 };
 
 struct aws_dynamo_batch_write_item_response
-*aws_dynamo_parse_batch_write_item_response(const char *response, int response_len)
+*aws_dynamo_parse_batch_write_item_response(const char *response,
+					    int response_len)
 {
 	yajl_handle hand;
 	yajl_status stat;
@@ -336,7 +344,8 @@ struct aws_dynamo_batch_write_item_response
 
 	_ctx.r = calloc(sizeof(*(_ctx.r)), 1);
 	if (_ctx.r == NULL) {
-		Warnx("aws_dynamo_parse_batch_write_item_response: alloc failed.");
+		Warnx
+		    ("aws_dynamo_parse_batch_write_item_response: alloc failed.");
 		return NULL;
 	}
 
@@ -362,8 +371,8 @@ struct aws_dynamo_batch_write_item_response
 	return _ctx.r;
 }
 
-struct aws_dynamo_batch_write_item_response *aws_dynamo_batch_write_item(
-	struct aws_handle *aws, const char *request)
+struct aws_dynamo_batch_write_item_response
+*aws_dynamo_batch_write_item(struct aws_handle *aws, const char *request)
 {
 	const char *response;
 	int response_len;
@@ -381,8 +390,8 @@ struct aws_dynamo_batch_write_item_response *aws_dynamo_batch_write_item(
 	}
 
 	if ((r =
-	     aws_dynamo_parse_batch_write_item_response(response,
-						   response_len)) == NULL) {
+	     aws_dynamo_parse_batch_write_item_response(response, response_len))
+	    == NULL) {
 		Warnx("aws_dynamo_batch_write_item: Failed to parse response.");
 		return NULL;
 	}
@@ -390,8 +399,9 @@ struct aws_dynamo_batch_write_item_response *aws_dynamo_batch_write_item(
 	return r;
 }
 
-void aws_dynamo_dump_batch_write_item_response(
-	struct aws_dynamo_batch_write_item_response *r)
+void aws_dynamo_dump_batch_write_item_response(struct
+					       aws_dynamo_batch_write_item_response
+					       *r)
 {
 #ifdef DEBUG_PARSER
 	int i;
@@ -401,20 +411,20 @@ void aws_dynamo_dump_batch_write_item_response(
 	}
 
 	if (r->unprocessed_items) {
-		Debug("unprocessed items: %s",
-		      r->unprocessed_items);
+		Debug("unprocessed items: %s", r->unprocessed_items);
 	}
 
 	Debug("%d responses:", r->num_responses);
 	for (i = 0; i < r->num_responses; i++) {
-		Debug("%s: %f capacity units", r->responses[i].table_name,
-			r->responses[i].consumed_capacity_units);
+		Debug("%s: %f capacity units",
+		      r->responses[i].table_name,
+		      r->responses[i].consumed_capacity_units);
 	}
 #endif
 }
 
 void aws_dynamo_free_batch_write_item_response(struct aws_dynamo_batch_write_item_response
-					  *r)
+					       *r)
 {
 	int i;
 
