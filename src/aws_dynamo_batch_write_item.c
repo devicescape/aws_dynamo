@@ -99,6 +99,7 @@ static int charbuf_strcatf(struct charbuf *cb, const char *format, ...) {
 			return -1;
 		}
 	}
+	cb->current += n;
 	return n;
 }
 
@@ -165,6 +166,17 @@ static int handle_string(void *ctx, const unsigned char *val, unsigned int len)
 
 	switch (_ctx->parser_state) {
 	case PARSER_STATE_COLLECT_UNPROCESSED_ITEMS: {
+		char *str = strndup(val, len);
+		if (str == NULL) {
+			Warnx("handle_string: alloc failed.");
+			return 0;
+		}
+		if (charbuf_strcatf(&(_ctx->cb), "\"%s\"", str) == -1) {
+			Warnx("handle_map_key: charbuf_strcatf failed.");
+			free(str);
+			return 0;
+		}
+		free(str);
 		break;
 	}
 	default:{
@@ -195,6 +207,10 @@ static int handle_start_map(void *ctx)
 	switch (_ctx->parser_state) {
 	case PARSER_STATE_COLLECT_UNPROCESSED_ITEMS: {
 		_ctx->unprocessed_map++;
+		if (charbuf_strcatf(&(_ctx->cb), "{") == -1) {
+			Warnx("handle_end_map: charbuf_strcatf failed.");
+			return 0;
+		}
 		break;
 	}
 	case PARSER_STATE_NONE:{
@@ -241,6 +257,18 @@ static int handle_map_key(void *ctx, const unsigned char *val, unsigned int len)
 
 	switch (_ctx->parser_state) {
 	case PARSER_STATE_COLLECT_UNPROCESSED_ITEMS: {
+		char *key = strndup(val, len);
+		if (key == NULL) {
+			Warnx("handle_map_key: alloc failed.");
+			return 0;
+		}
+		if (charbuf_strcatf(&(_ctx->cb), "\"%s\":", key) == -1) {
+			Warnx("handle_map_key: charbuf_strcatf failed.");
+			free(key);
+			return 0;
+		}
+		free(key);
+
 		break;
 	}
 	case PARSER_STATE_ROOT_MAP:{
@@ -307,6 +335,10 @@ static int handle_end_map(void *ctx)
 	case PARSER_STATE_COLLECT_UNPROCESSED_ITEMS: {
 		if (_ctx->unprocessed_map != 0) {
 			_ctx->unprocessed_map--;
+			if (charbuf_strcatf(&(_ctx->cb), "}") == -1) {
+				Warnx("handle_end_map: charbuf_strcatf failed.");
+				return 0;
+			}
 		} else {
 			_ctx->parser_state = PARSER_STATE_ROOT_MAP;
 		}
@@ -349,6 +381,10 @@ static int handle_start_array(void *ctx)
 
 	switch (_ctx->parser_state) {
 	case PARSER_STATE_COLLECT_UNPROCESSED_ITEMS: {
+		if (charbuf_strcatf(&(_ctx->cb), "[") == -1) {
+			Warnx("handle_end_map: charbuf_strcatf failed.");
+			return 0;
+		}
 		_ctx->unprocessed_array++;
 		break;
 	}
@@ -379,6 +415,10 @@ static int handle_end_array(void *ctx)
 
 	switch (_ctx->parser_state) {
 	case PARSER_STATE_COLLECT_UNPROCESSED_ITEMS: {
+		if (charbuf_strcatf(&(_ctx->cb), "]") == -1) {
+			Warnx("handle_end_map: charbuf_strcatf failed.");
+			return 0;
+		}
 		_ctx->unprocessed_array--;
 		break;
 	}
@@ -429,7 +469,7 @@ struct aws_dynamo_batch_write_item_response
 		Warnx("aws_dynamo_parse_batch_write_item_response: unprocessed keys alloc failed.");
 		return NULL;
 	}
-	_ctx.cb.start = _ctx.cb.current;
+	_ctx.cb.current = _ctx.cb.start;
 
 	hand = yajl_alloc(&handle_callbacks, NULL, NULL, &_ctx);
 
@@ -450,6 +490,8 @@ struct aws_dynamo_batch_write_item_response
 	}
 
 	yajl_free(hand);
+	aws_dynamo_dump_batch_write_item_response(_ctx.r);
+	_ctx.r->unprocessed_items = _ctx.cb.start;
 	return _ctx.r;
 }
 

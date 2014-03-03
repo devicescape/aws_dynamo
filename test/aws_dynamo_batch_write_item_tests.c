@@ -40,6 +40,8 @@ test_parse_batch_write_item_response_example (void)
 {
   test_aws_dynamo_parse_batch_write_item_response ("{\"Responses\":{\"Thread\":{\"ConsumedCapacityUnits\":1.0},\"Reply\":{\"ConsumedCapacityUnits\":1.0}},\"UnprocessedItems\":{\"Reply\":[{\"DeleteRequest\":{\"Key\":{\"HashKeyElement\":{\"S\":\"Amazon DynamoDB#DynamoDB Thread 4\"},\"RangeKeyElement\":{\"S\":\"oops - accidental row\"}}}}]}}");
 }
+  
+// "Reply":[{"DeleteRequest":{"Key":{"HashKeyElement":{"S":"Amazon DynamoDB#DynamoDB Thread 4"},"RangeKeyElement":{"S":"oops - accidental row":}}}}]
 
 static void
 test_parse_batch_write_item_response (void)
