@@ -31,7 +31,6 @@ test_aws_dynamo_parse_batch_write_item_response (const char *json)
 
   r = aws_dynamo_parse_batch_write_item_response (json, strlen (json));
 
-  aws_dynamo_dump_batch_write_item_response (r);
   aws_dynamo_free_batch_write_item_response (r);
 }
 

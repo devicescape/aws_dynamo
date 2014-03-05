@@ -15,6 +15,8 @@ libaws_dynamo_la_SOURCES = aws.c aws_dynamo.c \
 	aws_iam.h \
 	aws_sigv4.c \
 	aws_sigv4.h \
+	jsmn.c \
+	jsmn.h \
 	http.h
 
 libaws_dynamo_la_CPPFLAGS = -I$(top_srcdir)/src
