@@ -94,6 +94,7 @@ enum {
 #define AWS_DYNAMO_JSON_LAST_EVALUATED_TABLE_NAME	"LastEvaluatedTableName"
 #define AWS_DYNAMO_JSON_HASH_KEY_ELEMENT	"HashKeyElement"
 #define AWS_DYNAMO_JSON_RANGE_KEY_ELEMENT	"RangeKeyElement"
+#define AWS_DYNAMO_JSON_UNPROCESSED_ITEMS	"UnprocessedItems"
 #define AWS_DYNAMO_JSON_UNPROCESSED_KEYS	"UnprocessedKeys"
 #define AWS_DYNAMO_JSON_CONSUMED_CAPACITY	"ConsumedCapacityUnits"
 #define AWS_DYNAMO_JSON_TYPE_STRING			"S"
@@ -292,6 +293,7 @@ void aws_dynamo_free_item(struct aws_dynamo_item *item);
 #endif
 
 #include "aws_dynamo_batch_get_item.h"
+#include "aws_dynamo_batch_write_item.h"
 #include "aws_dynamo_create_table.h"
 #include "aws_dynamo_delete_item.h"
 #include "aws_dynamo_delete_table.h"
