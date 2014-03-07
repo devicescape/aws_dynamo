@@ -54,16 +54,15 @@ static const char *parser_state_strings[] = {
 
 static const char *parser_state_string(int state)
 {
-	if (state < 0 ||
-	    state >
-	    sizeof(parser_state_strings) / sizeof(parser_state_strings[0])) {
+	if (state < 0 || state > sizeof(parser_state_strings) / sizeof(parser_state_strings[0])) {
 		return "invalid state";
 	} else {
 		return parser_state_strings[state];
 	}
 }
 
-static void dump_token(jsmntok_t *t, const char *response) {
+static void dump_token(jsmntok_t * t, const char *response)
+{
 	char *type;
 	char *str;
 	switch (t->type) {
@@ -81,22 +80,93 @@ static void dump_token(jsmntok_t *t, const char *response) {
 		break;
 	}
 	str = strndup(response + t->start, t->end - t->start);
-	Debug("%s %d %d %d -%s-", type, t->start, t->end, t->size, str);
+	Debug("%s start=%d end=%d size=%d -%s-", type, t->start, t->end, t->size, str);
 	free(str);
 }
-				
-static int aws_dynamo_batch_write_item_handle_responses_key(jsmntok_t *tokens, int num_tokens,
-	int start, char *response, 
-	struct aws_dynamo_batch_write_item_consumed_capacity *r) {
-	int i;
-	int n;
 
-	for (i = start; i < n; i++) {
+static int aws_dynamo_handle_responses_key(jsmntok_t * tokens,
+					   int num_tokens, int start_index,
+					   const char *response, struct
+					   aws_dynamo_batch_write_item_response
+					   *r)
+{
+	int j;
+	int state = PARSER_STATE_NONE;
+
+	j = start_index;
+	while (j < num_tokens && tokens[j].start < tokens[start_index].end) {
 		jsmntok_t *t;
-		t = &(tokens[i]);
-		dump_token(t, response);
+		t = &(tokens[j]);
+
+		switch (state) {
+		case PARSER_STATE_NONE:{
+				if (t->type != JSMN_OBJECT) {
+					Warnx("unexpected type, state %s",
+					      parser_state_string(state));
+					goto failure;
+				}
+				state = PARSER_STATE_ROOT_MAP;
+				break;
+			}
+		case PARSER_STATE_ROOT_MAP:{
+				char *table_name;
+				struct aws_dynamo_batch_write_item_consumed_capacity *new_responses;
+				if (t->type != JSMN_STRING) {
+					Warnx("unexpected type, state %s", parser_state_string(state));
+					goto failure;
+				}
+				table_name = strndup(response + t->start, t->end - t->start);
+				if (table_name == NULL) {
+					Warnx("failed to allocate table name");
+					goto failure;
+				}
+				new_responses = realloc(r->responses, sizeof(r->responses[0]) * (r->num_responses + 1));
+				if (new_responses == NULL) {
+					Warnx("failed to allocate responses");
+					free(table_name);
+					goto failure;
+				}
+				r->responses = new_responses;
+				r->responses[r->num_responses].table_name = table_name;
+				r->num_responses++;
+				state = PARSER_STATE_TABLE_NAME_KEY;
+				break;
+			}
+		case PARSER_STATE_TABLE_NAME_KEY:{
+				if (t->type != JSMN_OBJECT) {
+					Warnx("unexpected type, state %s", parser_state_string(state));
+					goto failure;
+				}
+				state = PARSER_STATE_TABLE_NAME_MAP;
+				break;
+			}
+		case PARSER_STATE_TABLE_NAME_MAP:{
+				if (t->type != JSMN_STRING) {
+					Warnx("unexpected type, state %s", parser_state_string(state));
+					goto failure;
+				}
+				if (!AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_CONSUMED_CAPACITY, response + t->start, t->end - t->start)) {
+					Warnx("unexpected string value, state %s", parser_state_string(state));
+					goto failure;
+				}
+				state = PARSER_STATE_CONSUMED_CAPACITY_KEY;
+				break;
+			}
+		case PARSER_STATE_CONSUMED_CAPACITY_KEY:{
+				if (t->type != JSMN_PRIMITIVE) {
+					Warnx("unexpected type, state %s", parser_state_string(state));
+					goto failure;
+				}
+				aws_dynamo_json_get_double(response + t->start, t->end - t->start, &(r->responses[r->num_responses - 1].consumed_capacity_units));
+				state = PARSER_STATE_ROOT_MAP;
+				break;
+			}
+		}
+		j++;
 	}
-	return 10;
+	return j - 1;
+ failure:
+	return -1;
 }
 
 struct aws_dynamo_batch_write_item_response
@@ -111,83 +181,73 @@ struct aws_dynamo_batch_write_item_response
 	int i;
 	int state = PARSER_STATE_NONE;
 
-	jsmn_init(&parser);
-	n = jsmn_parse(&parser, response, response_len, tokens,
-		       sizeof(tokens) / sizeof(tokens[0]));
-
 	r = calloc(sizeof(*r), 1);
 	if (r == NULL) {
 		Warnx("aws_dynamo_parse_batch_write_item_response: alloc failed.");
 		return NULL;
 	}
 
+	jsmn_init(&parser);
+	n = jsmn_parse(&parser, response, response_len, tokens,
+		       sizeof(tokens) / sizeof(tokens[0]));
+
 	for (i = 0; i < n; i++) {
 		jsmntok_t *t;
 		t = &(tokens[i]);
-		Debug("%d", i);
-		dump_token(t, response);
-		//continue;
 
 		switch (state) {
 		case PARSER_STATE_NONE:{
-			if (t->type != JSMN_OBJECT) {
-				Warnx("unexpected type, state %s",
-				      parser_state_string(state));
-				goto failure;
-			}
-			state = PARSER_STATE_ROOT_MAP;
-			break;
+				if (t->type != JSMN_OBJECT) {
+					Warnx("unexpected type, state %s", parser_state_string(state));
+					goto failure;
+				}
+				state = PARSER_STATE_ROOT_MAP;
+				break;
 			}
 		case PARSER_STATE_ROOT_MAP:{
-			if (t->type != JSMN_STRING) {
-				Warnx("unexpected type, state %s", parser_state_string(state));
-				goto failure;
-			}
-			if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_RESPONSES,
-				response + t->start, t->end - t->start)) {
-				state = PARSER_STATE_RESPONSES_KEY;
-			} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_UNPROCESSED_ITEMS,
-				response + t->start, t->end - t->start)) {
-				state = PARSER_STATE_UNPROCESSED_ITEMS_KEY;
-			}
-			break;
+				if (t->type != JSMN_STRING) {
+					Warnx("unexpected type, state %s", parser_state_string(state));
+					goto failure;
+				}
+				if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_RESPONSES, response + t->start, t->end - t->start)) {
+					state = PARSER_STATE_RESPONSES_KEY;
+				} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_UNPROCESSED_ITEMS, response + t->start, t->end - t->start)) {
+					state = PARSER_STATE_UNPROCESSED_ITEMS_KEY;
+				}
+				break;
 			}
 		case PARSER_STATE_RESPONSES_KEY:{
-			if (t->type != JSMN_OBJECT) {
-				Warnx("unexpected type, state %s", parser_state_string(state));
-				goto failure;
-			}
-			i = aws_dynamo_batch_write_item_handle_responses_key(tokens, num_tokens, i, response, &(r->responses));
-			state = PARSER_STATE_ROOT_MAP;
-			break;		
+				if (t->type != JSMN_OBJECT) {
+					Warnx("unexpected type, state %s", parser_state_string(state));
+					goto failure;
+				}
+				i = aws_dynamo_handle_responses_key(tokens, n, i, response, r);
+				state = PARSER_STATE_ROOT_MAP;
+				break;
 			}
 		case PARSER_STATE_UNPROCESSED_ITEMS_KEY:{
-			int end = t->end;
-			int j;
-			if (t->type != JSMN_OBJECT) {
-				Warnx("unexpected type, state %s",
-				      parser_state_string(state));
-				goto failure;
-			}
-			if (r->unprocessed_items != NULL) {
-				Warnx("duplicate unprocessed items");
-				goto failure;
-			}
-			r->unprocessed_items =
-			    strndup(response + t->start,
-				    t->end - t->start);
-			if (r->unprocessed_items == NULL) {
-				Warnx("unprocessed items alloc failed");
-				goto failure;
-			}
-			j = i;
-			while (j < num_tokens && tokens[j].start < tokens[i].end) {
-				j++;
-			}
-			i = j - 1;
-			break;
+				int j;
+				if (t->type != JSMN_OBJECT) {
+					Warnx("unexpected type, state %s", parser_state_string(state));
+					goto failure;
+				}
+				if (r->unprocessed_items != NULL) {
+					Warnx("duplicate unprocessed items");
+					goto failure;
+				}
+				r->unprocessed_items = strndup(response + t->start, t->end - t->start);
+				if (r->unprocessed_items == NULL) {
+					Warnx("unprocessed items alloc failed");
+					goto failure;
+				}
+				j = i;
+				while (j < num_tokens && j < n && tokens[j].start < tokens[i].end) {
+					j++;
+				}
+				i = j - 1;
+				break;
 
-		}
+			}
 		}
 	}
 	aws_dynamo_dump_batch_write_item_response(r);
@@ -250,7 +310,8 @@ void aws_dynamo_dump_batch_write_item_response(struct
 #endif
 }
 
-void aws_dynamo_free_batch_write_item_response(struct aws_dynamo_batch_write_item_response
+void aws_dynamo_free_batch_write_item_response(struct
+					       aws_dynamo_batch_write_item_response
 					       *r)
 {
 	int i;
