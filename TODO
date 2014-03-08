@@ -33,6 +33,14 @@ indirection.  I am thinking at least this:
 - Need to finish support for floating point numbers.
 [effort: small]
 
+
+- Fix segfault when no credentials are available.  We need to exit cleanly
+rather than crashing when no credentials are available.
+WARN:  aws_iam_load_default_token: Failed to get role.
+ERROR: aws_init: Failed to get aws token.
+Segmentation fault (core dumped)
+
+
 - Look at x-amz-crc32 header in response and use it to verify response
 integrity, could use zlib for crc32.  This header was added in a recent
 API update.  It is important to take advantage of this header
@@ -43,10 +51,6 @@ API update.  It is important to take advantage of this header
 
 - Build and test on various systems, fix anything that doesn't work.
 Any system where the dependancies are available should be usable.
-[effort: medium]
-
-- add support for remaining DynamoDB operations: 
-  batch write item
 [effort: medium]
 
 - add support for B (Binary) and BS (Binary Set) types

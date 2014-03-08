@@ -7,10 +7,7 @@ Features
 ========
 
 * AWS DynamoDB API version 2011-12-05 (DynamoDB v1 protocol)
-* Supports the following DynamoDB operations: batch get item,
-  create table, delete item, delete table, describe table,
-  get item, list tables, put item, query, scan, update item,
-  update table
+* Supports all DynamoDB operations
 * A flexible, efficient, and fast API for accessing DynamoDB
   from within C applications.
 * Supports obtaining AWS credentials from an IAM Role,

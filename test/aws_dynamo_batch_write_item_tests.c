@@ -19,6 +19,7 @@
 #include <string.h>
 
 #include "aws_dynamo.h"
+#include "test_utils.h"
 
 struct aws_dynamo_batch_write_item_response
 *aws_dynamo_parse_batch_write_item_response(const char *response,
@@ -40,18 +41,82 @@ test_parse_batch_write_item_response_example (void)
   test_aws_dynamo_parse_batch_write_item_response ("{\"Responses\":{\"Thread\":{\"ConsumedCapacityUnits\":1.0},\"Reply\":{\"ConsumedCapacityUnits\":1.0}},\"UnprocessedItems\":{\"Reply\":[{\"DeleteRequest\":{\"Key\":{\"HashKeyElement\":{\"S\":\"Amazon DynamoDB#DynamoDB Thread 4\"},\"RangeKeyElement\":{\"S\":\"oops - accidental row\"}}}}]}}");
 }
   
-// "Reply":[{"DeleteRequest":{"Key":{"HashKeyElement":{"S":"Amazon DynamoDB#DynamoDB Thread 4"},"RangeKeyElement":{"S":"oops - accidental row":}}}}]
-
 static void
-test_parse_batch_write_item_response (void)
+test_parse_batch_write_item_response(void)
 {
-  test_parse_batch_write_item_response_example ();
+  test_parse_batch_write_item_response_example();
+}
+ 
+static void
+test_batch_write_item(void)
+{
+	struct aws_dynamo_batch_write_item_response *r;
+	struct aws_handle *aws_dynamo;
+	char *request = "{\
+\"RequestItems\":{\
+	\"aws_dynamo_test_hash_range\":[\
+		{\
+			\"PutRequest\":{\
+				\"Item\":{\
+					\"hash\":{\
+						\"N\":\"34\"\
+					},\
+					\"range\":{\
+						\"S\":\"blah\"\
+					},\
+					\"str\":{\
+						\"S\":\"another str\"\
+					}\
+				}\
+			}\
+		},\
+		{\
+			\"DeleteRequest\":{\
+				\"Key\":{\
+					\"HashKeyElement\":{\
+						\"N\":\"35\"\
+					},\
+					\"RangeKeyElement\":{\
+						\"S\":\"range to be deleted\"\
+					}\
+				}\
+			}\
+		}\
+	],\
+	\"aws_dynamo_test_hash\":[\
+		{\
+			\"PutRequest\":{\
+				\"Item\":{\
+					\"hash\":{\
+						\"N\":\"123\"\
+					},\
+					\"str\":{\
+						\"S\":\"value for str\"\
+					}\
+				}\
+			}\
+		}\
+	]\
+	}\
+}";
+
+	aws_dynamo = aws_init(NULL, NULL);
+	create_test_table(aws_dynamo, "aws_dynamo_test_hash", "N", NULL);
+	create_test_table(aws_dynamo, "aws_dynamo_test_hash_range", "N", "S");
+	wait_for_table(aws_dynamo, "aws_dynamo_test_hash");
+	wait_for_table(aws_dynamo, "aws_dynamo_test_hash_range");
+
+	r = aws_dynamo_batch_write_item(aws_dynamo, request);
+
+	aws_dynamo_free_batch_write_item_response(r);
+	aws_deinit(aws_dynamo);
 }
 
 int
 main (int argc, char *argv[])
 {
-  test_parse_batch_write_item_response ();
+  test_parse_batch_write_item_response();
+  test_batch_write_item();
 
   return 0;
 }
