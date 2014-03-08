@@ -9,6 +9,8 @@ libaws_dynamo_la_SOURCES = aws.c aws_dynamo.c \
 	aws_dynamo_delete_item.c \
 	aws_dynamo_delete_table.c \
 	aws_dynamo_describe_table.c \
+	aws_dynamo_json.c \
+	aws_dynamo_json.h \
 	aws_dynamo_list_tables.c \
 	aws_dynamo_update_table.c \
 	aws_dynamo_utils.h \

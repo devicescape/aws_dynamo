@@ -23,66 +23,11 @@
 
 #include <stdlib.h>
 
-#include <yajl/yajl_parse.h>
-
 #include "http.h"
 #include "aws_dynamo.h"
+#include "aws_dynamo_json.h"
 
-#define DEBUG_PARSER 1
-
-enum {
-	PARSER_STATE_NONE = 0,
-	PARSER_STATE_ROOT_MAP,
-	PARSER_STATE_RESPONSES_KEY,
-	PARSER_STATE_RESPONSES_MAP,
-	PARSER_STATE_TABLE_NAME_KEY,
-	PARSER_STATE_TABLE_NAME_MAP,
-	PARSER_STATE_CONSUMED_CAPACITY_KEY,
-	PARSER_STATE_UNPROCESSED_ITEMS_KEY,
-};
-
-static const char *parser_state_strings[] = {
-	"none",
-	"root map",
-	"responses key",
-	"responses map",
-	"table name key",
-	"table name map",
-	"consumed capacity key",
-	"unprocessed items key",
-};
-
-static const char *parser_state_string(int state)
-{
-	if (state < 0 || state > sizeof(parser_state_strings) / sizeof(parser_state_strings[0])) {
-		return "invalid state";
-	} else {
-		return parser_state_strings[state];
-	}
-}
-
-static void dump_token(jsmntok_t * t, const char *response)
-{
-	char *type;
-	char *str;
-	switch (t->type) {
-	case JSMN_PRIMITIVE:
-		type = "primitive";
-		break;
-	case JSMN_OBJECT:
-		type = "object";
-		break;
-	case JSMN_ARRAY:
-		type = "array";
-		break;
-	case JSMN_STRING:
-		type = "string";
-		break;
-	}
-	str = strndup(response + t->start, t->end - t->start);
-	Debug("%s start=%d end=%d size=%d -%s-", type, t->start, t->end, t->size, str);
-	free(str);
-}
+//#define DEBUG_PARSER 1
 
 static int aws_dynamo_handle_responses_key(jsmntok_t * tokens,
 					   int num_tokens, int start_index,
@@ -169,9 +114,8 @@ static int aws_dynamo_handle_responses_key(jsmntok_t * tokens,
 	return -1;
 }
 
-struct aws_dynamo_batch_write_item_response
-*aws_dynamo_parse_batch_write_item_response(const char *response,
-					    int response_len)
+struct aws_dynamo_batch_write_item_response *
+aws_dynamo_parse_batch_write_item_response(const char *response, int response_len)
 {
 	struct aws_dynamo_batch_write_item_response *r;
 	jsmn_parser parser;
@@ -188,6 +132,7 @@ struct aws_dynamo_batch_write_item_response
 	}
 
 	jsmn_init(&parser);
+	/* TODO: check return value of jsm_parse. */
 	n = jsmn_parse(&parser, response, response_len, tokens,
 		       sizeof(tokens) / sizeof(tokens[0]));
 
@@ -222,6 +167,10 @@ struct aws_dynamo_batch_write_item_response
 					goto failure;
 				}
 				i = aws_dynamo_handle_responses_key(tokens, n, i, response, r);
+				if (i == -1) {
+					Warnx("Failed to parse responses key");
+					goto failure;
+				}
 				state = PARSER_STATE_ROOT_MAP;
 				break;
 			}
@@ -276,9 +225,7 @@ struct aws_dynamo_batch_write_item_response
 		return NULL;
 	}
 
-	if ((r =
-	     aws_dynamo_parse_batch_write_item_response(response, response_len))
-	    == NULL) {
+	if ((r = aws_dynamo_parse_batch_write_item_response(response, response_len)) == NULL) {
 		Warnx("aws_dynamo_batch_write_item: Failed to parse response.");
 		return NULL;
 	}
@@ -286,9 +233,7 @@ struct aws_dynamo_batch_write_item_response
 	return r;
 }
 
-void aws_dynamo_dump_batch_write_item_response(struct
-					       aws_dynamo_batch_write_item_response
-					       *r)
+void aws_dynamo_dump_batch_write_item_response(struct aws_dynamo_batch_write_item_response *r)
 {
 #ifdef DEBUG_PARSER
 	int i;
@@ -310,9 +255,7 @@ void aws_dynamo_dump_batch_write_item_response(struct
 #endif
 }
 
-void aws_dynamo_free_batch_write_item_response(struct
-					       aws_dynamo_batch_write_item_response
-					       *r)
+void aws_dynamo_free_batch_write_item_response(struct aws_dynamo_batch_write_item_response *r)
 {
 	int i;
 
