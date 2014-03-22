@@ -152,6 +152,11 @@ int main(int argc, char *argv[])
 {
 	struct aws_handle *aws = aws_init(NULL, NULL);
 
+	if (aws == NULL) {
+		printf("Could not initialize.\n");
+		exit(1);
+	}
+
 	example_create_table(aws);
 	example_put_item(aws);
 	example_get_item(aws);
