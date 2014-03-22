@@ -16,34 +16,32 @@
  * along with aws_dynamo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _AWS_DYNAMO_DELETE_ITEM_H_
-#define _AWS_DYNAMO_DELETE_ITEM_H_
+#ifndef _AWS_DYNAMO_JSON_H_
+#define _AWS_DYNAMO_JSON_H_
 
 #include "aws_dynamo.h"
+#include "jsmn.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct aws_dynamo_delete_item_response {
-	double consumed_capacity_units;
-		
-	struct aws_dynamo_item item;
+enum {
+	PARSER_STATE_NONE = 0,
+	PARSER_STATE_ROOT_MAP,
+	PARSER_STATE_RESPONSES_KEY,
+	PARSER_STATE_RESPONSES_MAP,
+	PARSER_STATE_TABLE_NAME_KEY,
+	PARSER_STATE_TABLE_NAME_MAP,
+	PARSER_STATE_CONSUMED_CAPACITY_KEY,
+	PARSER_STATE_UNPROCESSED_ITEMS_KEY,
 };
 
-struct aws_dynamo_delete_item_response *aws_dynamo_parse_delete_item_response(
-	const char *response,
-	int response_len, struct aws_dynamo_attribute *attributes, int num_attributes);
-
-struct aws_dynamo_delete_item_response *aws_dynamo_delete_item(struct aws_handle *aws,
-	const char *request, struct aws_dynamo_attribute *attributes, int num_attributes);
-
-void aws_dynamo_free_delete_item_response(struct aws_dynamo_delete_item_response *r);
-
-void aws_dynamo_dump_delete_item_response(struct aws_dynamo_delete_item_response *r);
+const char *parser_state_string(int state);
+void dump_token(jsmntok_t * t, const char *response);
 
 #ifdef  __cplusplus
 }
 #endif
 
-#endif /* _AWS_DYNAMO_DELETE_ITEM_H_ */
+#endif /* _AWS_DYNAMO_JSON_H_ */

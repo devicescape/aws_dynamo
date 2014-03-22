@@ -16,8 +16,8 @@
  * along with aws_dynamo.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _AWS_DYNAMO_DELETE_ITEM_H_
-#define _AWS_DYNAMO_DELETE_ITEM_H_
+#ifndef _AWS_DYNAMO_BATCH_WRITE_ITEM_H_
+#define _AWS_DYNAMO_BATCH_WRITE_ITEM_H_
 
 #include "aws_dynamo.h"
 
@@ -25,25 +25,26 @@
 extern "C" {
 #endif
 
-struct aws_dynamo_delete_item_response {
+struct aws_dynamo_batch_write_item_consumed_capacity {
 	double consumed_capacity_units;
-		
-	struct aws_dynamo_item item;
+	char *table_name;
 };
 
-struct aws_dynamo_delete_item_response *aws_dynamo_parse_delete_item_response(
-	const char *response,
-	int response_len, struct aws_dynamo_attribute *attributes, int num_attributes);
+struct aws_dynamo_batch_write_item_response {
+	int num_responses;
+	struct aws_dynamo_batch_write_item_consumed_capacity *responses;
+	char *unprocessed_items;
+};
 
-struct aws_dynamo_delete_item_response *aws_dynamo_delete_item(struct aws_handle *aws,
-	const char *request, struct aws_dynamo_attribute *attributes, int num_attributes);
+struct aws_dynamo_batch_write_item_response *
+aws_dynamo_batch_write_item(struct aws_handle *aws, const char *request);
 
-void aws_dynamo_free_delete_item_response(struct aws_dynamo_delete_item_response *r);
+void aws_dynamo_free_batch_write_item_response(struct aws_dynamo_batch_write_item_response *r);
 
-void aws_dynamo_dump_delete_item_response(struct aws_dynamo_delete_item_response *r);
+void aws_dynamo_dump_batch_write_item_response(struct aws_dynamo_batch_write_item_response *r);
 
 #ifdef  __cplusplus
 }
 #endif
 
-#endif /* _AWS_DYNAMO_DELETE_ITEM_H_ */
+#endif /* _AWS_DYNAMO_BATCH_WRITE_ITEM_H_ */

@@ -1,16 +1,13 @@
 aws_dynamo
 ==========
 
-AWS DynamoDB Library for C
+AWS DynamoDB Library for C and C++
 
 Features
 ========
 
 * AWS DynamoDB API version 2011-12-05 (DynamoDB v1 protocol)
-* Supports the following DynamoDB operations: batch get item,
-  create table, delete item, delete table, describe table,
-  get item, list tables, put item, query, scan, update item,
-  update table
+* Supports all DynamoDB operations
 * A flexible, efficient, and fast API for accessing DynamoDB
   from within C applications.
 * Supports obtaining AWS credentials from an IAM Role,
@@ -29,7 +26,6 @@ Dependancies
 
 * libcurl - for http support, http://curl.haxx.se/libcurl/
 * libyajl - for json parsing, http://lloyd.github.io/yajl/
-* expat - for xml parsing, http://expat.sourceforge.net/
 * openssl - for general purpose crypto functions, https://www.openssl.org/
 
 Building
@@ -54,7 +50,7 @@ $ sudo make install
 Basic Usage
 ===========
 
-See the examples/ subdirectory for detailed example.
+See the examples/ subdirectory for detailed examples.
 
 Get item attributes from DynamoDB.  Assume we have a table named
 'users' with a string hash key and attributes 'realName'

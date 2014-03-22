@@ -41,8 +41,8 @@ API update.  It is important to take advantage of this header
 - Add support for "UnprocessedKeys" in batch get item resposne.
 [effort: medium]
 
-- add support for remaining DynamoDB operations: 
-  batch write item
+- Build and test on various systems, fix anything that doesn't work.
+Any system where the dependancies are available should be usable.
 [effort: medium]
 
 - add support for B (Binary) and BS (Binary Set) types
@@ -57,19 +57,15 @@ API update.  It is important to take advantage of this header
   any depth.
 [effort: large]
 
-- Change aws.c:base64_encode() to not use open_memstream() since open_memstream()
-  isn't portable.  Instead, use an openssl mem buffer, see BIO_s_mem(3) for details.
-[effort: small]
-
 - extract x-amzn-RequestId header and include it in error messages
 [effort: small]
 
-- rename the aws_handle structure to aws_dynamo_handle for sanity.
-[effort: large]
+- Integrate the AWS Signature v4 test suite:
+  http://docs.aws.amazon.com/general/latest/gr/signature-v4-test-suite.html
+  There are a large number of test inputs in there that can be integrated into
+  out test suite.
+[effort: medium]
 
 - add support for DynamoDB v2
 [effort: large]
 
-- update to signature v4 (I think with that we can stop using the
-  session token service)
-[effort: medium]

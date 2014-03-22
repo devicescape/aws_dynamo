@@ -40,8 +40,6 @@ struct aws_handle {
 	char *aws_id;
 	char *aws_key;
 
-	HMAC_CTX hmac_ctx;
-
 	/* Last DynamoDB error info. */
 	char dynamo_message[512];
 	int dynamo_errno;
