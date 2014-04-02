@@ -1,3 +1,5 @@
+*.trs
+*.log
 Makefile
 *_tests
 *_test
