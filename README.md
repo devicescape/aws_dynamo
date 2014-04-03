@@ -31,7 +31,7 @@ Dependancies
 Building
 ========
 
-In addition to development headers for th elibraries listed above the build
+In addition to development headers for the libraries listed above the build
 depends on autoconf, automake, and libtool.
 
 ```
