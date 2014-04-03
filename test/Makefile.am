@@ -1,16 +1,31 @@
 INCLUDES = -I$(top_srcdir)/src/
 
 TESTS= \
-	create_table.test \
-	delete_item.test \
 	batch_get_item.test \
 	batch_write_item.test \
+	create_table.test \
+	delete_item.test \
 	describe_table.test \
 	get_item.test \
 	query.test \
+	setup.test
 	scan.test \
-	update_item.test \
-	sigv4.test
+	sigv4.test \
+	update_item.test
+
+# Test dependancies are specified by specifying dependancies between the
+# log files.
+# setup.test needs to be run before any other test is run.
+create_table.log: setup.log
+delete_item.log: setup.log
+batch_get_item.log: setup.log
+batch_write_item.log: setup.log
+describe_table.log: setup.log
+get_item.log: setup.log
+query.log: setup.log
+scan.log: setup.log
+update_item.log: setup.log
+sigv4.log: setup.log
 
 noinst_PROGRAMS = $(TESTS)
 
