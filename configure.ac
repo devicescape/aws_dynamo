@@ -10,6 +10,12 @@ AC_CHECK_LIB([crypto], [HMAC_Init_ex],,
 				 AC_MSG_ERROR([no openssl; please install openssl or equivalent]))
 AC_CHECK_LIB([yajl], [yajl_alloc],,
 				 AC_MSG_ERROR([no libyajl; please install yajl or equivalent]))
+
+# We support two yajl major versions. Version 1.x.x doesn't include yajl_version.h.
+# If yajl_version.h is missing assume major version 1.  Otherwise we will get the
+# major version from the header.
+AC_CHECK_HEADERS([yajl/yajl_version.h], [], [ AC_DEFINE(YAJL_MAJOR, 1, [yajl version 1])], [])
+
 AC_CHECK_LIB([curl], [curl_easy_perform],,
 				 AC_MSG_ERROR([no curl; please install curl or equivalent]))
 

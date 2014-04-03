@@ -488,11 +488,15 @@ static int aws_dynamo_parse_error_response(const unsigned char *response, int re
 	};
 	int rv;
 
-	hand = yajl_alloc(&error_response_parser_callbacks, NULL, NULL, &_ctx);
-
+#if YAJL_MAJOR == 2
+	hand = yajl_alloc(&error_response_parser_callbacks, NULL, &_ctx);
 	yajl_parse(hand, response, response_len);
-
+	stat = yajl_complete_parse(hand);
+#else
+	hand = yajl_alloc(&error_response_parser_callbacks, NULL, NULL, &_ctx);
+	yajl_parse(hand, response, response_len);
 	stat = yajl_parse_complete(hand);
+#endif
 
 	if (stat != yajl_status_ok) {
 		unsigned char *str =

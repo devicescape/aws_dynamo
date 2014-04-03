@@ -487,11 +487,15 @@ struct aws_dynamo_delete_table_response
 		return NULL;
 	}
 
-	hand = yajl_alloc(&handle_callbacks, NULL, NULL, &_ctx);
-
+#if YAJL_MAJOR == 2
+	hand = yajl_alloc(&handle_callbacks, NULL, &_ctx);
 	yajl_parse(hand, response, response_len);
-
+	stat = yajl_complete_parse(hand);
+#else
+	hand = yajl_alloc(&handle_callbacks, NULL, NULL, &_ctx);
+	yajl_parse(hand, response, response_len);
 	stat = yajl_parse_complete(hand);
+#endif
 
 	if (stat != yajl_status_ok) {
 		unsigned char *str = yajl_get_error(hand, 1, response, response_len);

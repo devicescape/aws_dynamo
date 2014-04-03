@@ -22,6 +22,10 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef HAVE_YAJL_YAJL_VERSION_H
+#include <yajl/yajl_version.h>
+#endif
+
 #define Debug(args...) {fprintf (stderr, "DEBUG: "); fprintf (stderr, args); fprintf (stderr, "\n");}
 #define Warnx(args...) {fprintf (stderr, "WARN:  "); fprintf (stderr, args); fprintf (stderr, "\n");}
 #define Err(args...) {fprintf (stderr, "ERROR: "); fprintf (stderr, args); fprintf (stderr, "\n");}

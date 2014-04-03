@@ -363,11 +363,15 @@ struct aws_dynamo_update_item_response * aws_dynamo_parse_update_item_response(c
 		_ctx.r->num_attributes = num_attributes;
 	}
 
-	hand = yajl_alloc(&update_item_callbacks, NULL, NULL, &_ctx);
-
+#if YAJL_MAJOR == 2
+	hand = yajl_alloc(&update_item_callbacks, NULL, &_ctx);
 	yajl_parse(hand, response, response_len);
-
+	stat = yajl_complete_parse(hand);
+#else
+	hand = yajl_alloc(&update_item_callbacks, NULL, NULL, &_ctx);
+	yajl_parse(hand, response, response_len);
 	stat = yajl_parse_complete(hand);
+#endif
 
 	if (stat != yajl_status_ok) {
 		unsigned char *str =
