@@ -203,13 +203,15 @@ int get_table_status(struct aws_handle *aws_dynamo, const char *table_name)
 void wait_for_table(struct aws_handle *aws_dynamo, const char *table_name)
 {
 	int status;
+	int tries = 0;
 
 	status = get_table_status(aws_dynamo, table_name);
 
-	while (status != AWS_DYNAMO_TABLE_STATUS_ACTIVE &&
-	       status != AWS_DYNAMO_TABLE_STATUS_CREATING) {
+	while (status != AWS_DYNAMO_TABLE_STATUS_ACTIVE) {
+		assert(tries < 18);
 		sleep(10);
 		status = get_table_status(aws_dynamo, table_name);
+		tries++;
 	}
 }
 
