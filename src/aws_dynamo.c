@@ -147,21 +147,21 @@ static int aws_dynamo_post(struct aws_handle *aws, const char *target, const cha
 		return -1;
 	}
 
-	if (aws->aws_id == NULL && aws->aws_key == NULL &&
-	    aws->token->expiration - now <= AWS_SESSION_REFRESH_TIME) {
-		struct aws_session_token *new_token;
+	if (aws->aws_id == NULL && aws->aws_key == NULL) {
+		if (aws->token->expiration - now <= AWS_SESSION_REFRESH_TIME) {
+			struct aws_session_token *new_token;
 
-		new_token = aws_iam_load_default_token(aws);
+			new_token = aws_iam_load_default_token(aws);
 
-		if (new_token == NULL) {
-			Warnx("aws_dynamo_post: Failed to refresh token.");
-		} else {
-			struct aws_session_token *old_token;
-			old_token = aws->token;
-			aws->token = new_token;
-			aws_free_session_token(old_token);   
+			if (new_token == NULL) {
+				Warnx("aws_dynamo_post: Failed to refresh token.");
+			} else {
+				struct aws_session_token *old_token;
+				old_token = aws->token;
+				aws->token = new_token;
+				aws_free_session_token(old_token);   
+			}
 		}
-
 		aws_secret_access_key = aws->token->secret_access_key;
 		aws_access_key_id = aws->token->access_key_id;
 	} else {
