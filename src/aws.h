@@ -19,7 +19,7 @@
 #ifndef _AWS_H_
 #define _AWS_H_
 
-#include <openssl/hmac.h>
+#include <time.h>
 
 #ifdef  __cplusplus
 extern "C" {

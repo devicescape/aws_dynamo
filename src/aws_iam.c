@@ -23,6 +23,7 @@
 #include "http.h"
 #include "aws.h"
 #include <yajl/yajl_parse.h>
+#include <stdlib.h>
 
 //#define DEBUG_PARSER 1
 

@@ -19,6 +19,7 @@
 #ifndef _AWS_DYNAMO_UTILS_H_
 #define _AWS_DYNAMO_UTILS_H_
 
+#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 

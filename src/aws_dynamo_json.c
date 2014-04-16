@@ -23,6 +23,7 @@
 #include "jsmn.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 static const char *parser_state_strings[] = {
 	"none",
