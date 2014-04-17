@@ -7,6 +7,7 @@ TESTS= \
 	delete_item.test \
 	describe_table.test \
 	get_item.test \
+	list_tables.test \
 	put_item.test \
 	query.test \
 	setup.test
@@ -23,6 +24,7 @@ batch_get_item.log: setup.log
 batch_write_item.log: setup.log
 describe_table.log: setup.log
 get_item.log: setup.log
+list_tables.log: setup.log
 put_item.log: setup.log
 query.log: setup.log
 scan.log: setup.log
