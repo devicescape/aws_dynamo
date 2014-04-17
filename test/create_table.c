@@ -210,11 +210,13 @@ int main(int argc, char *argv[])
 {
 	test_parse_create_table();
 	test_create_table("N", NULL);
+#if 0
+	/* It takes too long to run them all. */
 	test_create_table("N", "N");
 	test_create_table("S", NULL);
 	test_create_table("S", "S");
 	test_create_table("N", "S");
 	test_create_table("S", "N");
-
+#endif
 	return 0;
 }
