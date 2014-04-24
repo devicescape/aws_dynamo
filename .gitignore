@@ -16,3 +16,5 @@ Makefile.in
 /config.log
 /config.status
 /libtool
+
+ds-release

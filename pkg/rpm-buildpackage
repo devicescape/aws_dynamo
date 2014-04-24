@@ -1,0 +1,51 @@
+#!/bin/sh -x
+
+# rpmbuild wrapper for creating host installable RPMs
+
+if [ "x$1" = "x" ]; then
+	echo "Usage: $0 <spec file>"
+	exit
+fi
+
+RPMDIR=/tmp/rpmbuild.$$
+SPECFILE=`basename $1`
+SPECPATH=${RPMDIR}/SPECS/${SPECFILE}
+
+# Create directory structure
+mkdir -p ${RPMDIR}/SOURCES
+mkdir -p ${RPMDIR}/SPECS
+mkdir -p ${RPMDIR}/SRPMS
+mkdir -p ${RPMDIR}/RPMS/i386
+mkdir -p ${RPMDIR}/RPMS/x86_64
+mkdir -p ${RPMDIR}/RPMS/noarch
+mkdir -p ${RPMDIR}/BUILD
+mkdir -p ${RPMDIR}/TEMP
+
+# Fix up spec file
+echo "%define _topdir ${RPMDIR}" > ${SPECPATH}
+cat $1 >> ${SPECPATH}
+
+# Extract package name & version
+PKG_NAME=`grep -i "^Name:" ${SPECPATH} | head -1 | awk '{print $2}'`
+PKG_VERS=`grep -i "^Version:" ${SPECPATH} | head -1 | awk '{print $2}'`
+PKG_RLSE=`grep -i "^Release:" ${SPECPATH} | head -1 | awk '{print $2}'`
+
+# Create copy of sources
+mkdir -p ${RPMDIR}/TEMP/${PKG_NAME}-${PKG_VERS}
+# cp -a . ${RPMDIR}/TEMP/${PKG_NAME}-${PKG_VERS}
+tar c --exclude=.svn -f - . | tar x -C ${RPMDIR}/TEMP/${PKG_NAME}-${PKG_VERS} -f -
+tar cz -C ${RPMDIR}/TEMP -f ${RPMDIR}/SOURCES/${PKG_NAME}-${PKG_VERS}.tar.gz \
+    ${PKG_NAME}-${PKG_VERS}
+
+# Create the RPM
+rpmbuild -bb ${SPECPATH}
+
+if [ "$?" = "0" ]; then
+    
+    mkdir -p ds-release
+    mv ${RPMDIR}/RPMS/*/*.rpm ds-release/
+    
+fi
+
+rm -rf $RPMDIR
+
