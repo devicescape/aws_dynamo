@@ -31,7 +31,7 @@ PKG_VERS=`grep -i "^Version:" ${SPECPATH} | head -1 | awk '{print $2}'`
 PKG_RLSE=`grep -i "^Release:" ${SPECPATH} | head -1 | awk '{print $2}'`
 
 # Create copy of sources
-git archive --format tar.gz --prefix ${PKG_NAME}-${PKG_VERS} --output ${RPMDIR}/SOURCES/${PKG_NAME}-${PKG_VERS}.tar.gz HEAD .
+git archive --format tar.gz --prefix ${PKG_NAME}-${PKG_VERS}/ --output ${RPMDIR}/SOURCES/${PKG_NAME}-${PKG_VERS}.tar.gz HEAD .
 
 # Create the RPM
 rpmbuild -bb ${SPECPATH}
