@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eux
 
-VERSION=$1
+RELEASE=$1
 
 THISDIR="$( cd "$( dirname "$0" )" && pwd )"
 cd $THISDIR
@@ -34,7 +34,7 @@ git log -n1 --stat
 
 chmod +w pkg/aws_dynamo.spec
 
-sed -e "s/^Version: .*/Version: $VERSION/; " \
+sed -e "s/^Release: .*/Release: $RELEASE/; " \
 	< pkg/aws_dynamo.spec \
 	> pkg/aws_dynamo.spec.tmp
 mv pkg/aws_dynamo.spec.tmp pkg/aws_dynamo.spec
