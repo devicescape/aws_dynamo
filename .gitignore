@@ -4,6 +4,9 @@ Makefile.in
 
 # http://www.gnu.org/software/autoconf
 
+m4/*
+config/*
+
 /autom4te.cache
 /aclocal.m4
 /compile

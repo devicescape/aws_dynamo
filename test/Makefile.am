@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/src/
+AM_CPPFLAGS = -I$(top_srcdir)/src/
 
 TESTS= \
 	batch_get_item.test \
