@@ -31,11 +31,7 @@ PKG_VERS=`grep -i "^Version:" ${SPECPATH} | head -1 | awk '{print $2}'`
 PKG_RLSE=`grep -i "^Release:" ${SPECPATH} | head -1 | awk '{print $2}'`
 
 # Create copy of sources
-mkdir -p ${RPMDIR}/TEMP/${PKG_NAME}-${PKG_VERS}
-# cp -a . ${RPMDIR}/TEMP/${PKG_NAME}-${PKG_VERS}
-tar c --exclude=.svn -f - . | tar x -C ${RPMDIR}/TEMP/${PKG_NAME}-${PKG_VERS} -f -
-tar cz -C ${RPMDIR}/TEMP -f ${RPMDIR}/SOURCES/${PKG_NAME}-${PKG_VERS}.tar.gz \
-    ${PKG_NAME}-${PKG_VERS}
+git archive --format tar.gz --prefix ${PKG_NAME}-${PKG_VERS} --output ${RPMDIR}/SOURCES/${PKG_NAME}-${PKG_VERS}.tar.gz
 
 # Create the RPM
 rpmbuild -bb ${SPECPATH}
