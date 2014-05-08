@@ -28,8 +28,6 @@
 #include "aws_dynamo.h"
 #include "aws_dynamo_scan.h"
 
-//#define DEBUG_PARSER 1
-
 enum {
 	PARSER_STATE_NONE,
 	PARSER_STATE_ROOT_MAP,
@@ -610,7 +608,6 @@ void aws_dynamo_dump_scan_response(struct aws_dynamo_scan_response *r) {
 
 	items = r->items;
 	for (i = 0; i < r->count; i++) {
-		int j;
 		struct aws_dynamo_item *item = &(items[i]);
 		Debug("Item %d, %d attributes", i, item->num_attributes);
 		aws_dynamo_dump_attributes(item->attributes, item->num_attributes);

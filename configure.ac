@@ -24,7 +24,7 @@ AC_ARG_ENABLE([debug], [  --enable-debug    Turn on debugging],
 [case "${enableval}" in
   yes)
     debug=true
-    LOCAL_CFLAGS="${LOCAL_CFLAGS} -Werror"
+    LOCAL_CFLAGS="${LOCAL_CFLAGS} -Werror -DDEBUG_AWS_DYNAMO -DDEBUG_PARSER -DDEBUG_AWS_KINESIS"
     ;;
   no)
     debug=false

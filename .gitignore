@@ -19,5 +19,5 @@ config/*
 /config.log
 /config.status
 /libtool
-
+TAGS
 ds-release

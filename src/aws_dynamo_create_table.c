@@ -28,8 +28,6 @@
 #include "aws_dynamo.h"
 #include "aws_dynamo_create_table.h"
 
-//#define DEBUG_PARSER 1
-
 enum {
 	PARSER_STATE_NONE,
 	PARSER_STATE_ROOT_MAP,

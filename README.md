@@ -21,7 +21,7 @@ this library attempts to be portable to wherever the dependacies
 listed below are available.  Patches to increase portability or
 reports of portability successes or failures are appreciated.
 
-Dependancies
+Dependencies
 ============
 
 * libcurl - for http support, http://curl.haxx.se/libcurl/
@@ -40,9 +40,12 @@ $ ./configure
 $ make
 ```
 
+If you want to enable verbose debugging messages (this is only appropriate for
+development) then pass the '--enable-debug' option to 'configure'.
+
 Then, to run tests:
 ```
-$ make check
+$ make -j check
 ```
 
 To install the library:

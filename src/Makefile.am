@@ -13,6 +13,8 @@ libaws_dynamo_la_SOURCES = aws.c aws_dynamo.c \
 	aws_dynamo_list_tables.c \
 	aws_dynamo_update_table.c \
 	aws_dynamo_utils.h \
+	aws_kinesis.c \
+	aws_kinesis_put_record.c \
 	aws_iam.h \
 	aws_sigv4.c \
 	aws_sigv4.h \
@@ -38,6 +40,8 @@ pkginclude_HEADERS=\
 	aws_dynamo_scan.h \
 	aws_dynamo_update_item.h \
 	aws_dynamo_update_table.h \
+	aws_kinesis.h \
+	aws_kinesis_put_record.h \
 	aws.h
 
 

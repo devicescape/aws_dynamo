@@ -33,8 +33,6 @@
 // error.  We should have some way of storing the unprocessed keys so that
 // they can be used in a subsequant request.
 
-//#define DEBUG_PARSER 1
-
 enum {
 	PARSER_STATE_NONE,
 	PARSER_STATE_ROOT_MAP,
