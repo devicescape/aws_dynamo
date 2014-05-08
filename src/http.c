@@ -37,7 +37,7 @@
 
 #include "http.h"
 
-#define DEBUG_HTTP 1
+//#define DEBUG_HTTP 1
 
 #define LOCATION	"Location:"
 #define LOCATION_LEN	9
@@ -131,17 +131,15 @@ static int http_transaction(void *handle, const char *url,
 	http_reset_buffer(buf);
 
 	curl_easy_setopt(curl, CURLOPT_URL, url);
-
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, http_receive_data);
-
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, buf);
 
 	if (data) {
 		curl_easy_setopt(curl, CURLOPT_POST, 1);
-        curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
+		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
 	} else {
 		/* Use HTTP GET */
-        curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
+		curl_easy_setopt(curl, CURLOPT_HTTPGET, 1);
 	}
 
 	if (con_close != HTTP_NOCLOSE)
@@ -175,12 +173,12 @@ static int http_transaction(void *handle, const char *url,
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &buf->response);
 
 		/* Get a copy of the effective URL */
-        curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effective_url);
-        buf->url = strdup(effective_url);
+		curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effective_url);
+		buf->url = strdup(effective_url);
 	}
 
 	if (hdrs) {	
-        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
+		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
 		curl_slist_free_all(headers);
 	}
 
