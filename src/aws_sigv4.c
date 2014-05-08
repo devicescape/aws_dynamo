@@ -28,8 +28,6 @@
 #include <time.h>
 
 #include "aws.h"
-#include "aws_dynamo.h"
-#include "aws_kinesis.h"
 
 char *aws_sigv4_create_hashed_canonical_request(const char *http_request_method,
 					 const char *canonical_uri,
