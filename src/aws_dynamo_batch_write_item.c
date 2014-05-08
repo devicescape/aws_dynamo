@@ -27,8 +27,6 @@
 #include "aws_dynamo.h"
 #include "aws_dynamo_json.h"
 
-//#define DEBUG_PARSER 1
-
 static int aws_dynamo_handle_responses_key(jsmntok_t * tokens,
 					   int num_tokens, int start_index,
 					   const char *response, struct

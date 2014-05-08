@@ -18,12 +18,14 @@
 
 #define _GNU_SOURCE
 
+#include <string.h>
+#include <stdlib.h>
+
+#include "http.h"
+#include "aws_sigv4.h"
 #include "aws_dynamo_json.h"
 #include "aws_dynamo_utils.h"
 #include "jsmn.h"
-
-#include <string.h>
-#include <stdlib.h>
 
 static const char *parser_state_strings[] = {
 	"none",

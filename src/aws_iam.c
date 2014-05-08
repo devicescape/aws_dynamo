@@ -25,8 +25,6 @@
 #include <yajl/yajl_parse.h>
 #include <stdlib.h>
 
-//#define DEBUG_PARSER 1
-
 #define AWS_IAM_CODE						"Code"
 #define AWS_IAM_LAST_UPDATED			"LastUpdated"
 #define AWS_IAM_TYPE						"Type"

@@ -28,8 +28,6 @@
 #include "aws_dynamo.h"
 #include "aws_dynamo_get_item.h"
 
-//#define DEBUG_PARSER 1
-
 #define GET_ITEM_PARSER_STATE_NONE					0
 #define GET_ITEM_PARSER_STATE_ROOT					1
 #define GET_ITEM_PARSER_STATE_CAPACITY				2

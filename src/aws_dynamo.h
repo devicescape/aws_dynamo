@@ -29,6 +29,7 @@ extern "C" {
 
 /* AWS DynamoDB HTTP headers names.  These are all lowercase
 	to simplify the signature calculation. */
+/* FIXME: Change these to just AWS, move into aws.h */
 #define AWS_DYNAMO_AUTHORIZATION_HEADER	"authorization"
 #define AWS_DYNAMO_DATE_HEADER	"x-amz-date"
 #define AWS_DYNAMO_AUTH_HEADER	"x-amzn-authorization"
@@ -127,7 +128,7 @@ enum {
 #define AWS_DYNAMO_JSON_TABLE_STATUS_DELETING	"DELETING"
 #define AWS_DYNAMO_JSON_TABLE_STATUS_UPDATING	"UPDATING"
 
-
+    /*FIXME: Rename*/
 #define AWS_DYNAMO_VALCMP(s, val, len) (len == strlen(s) && \
 														strncmp(val, s, len) == 0)
 
