@@ -315,6 +315,7 @@ int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *b
 	do {
 
 		if (aws_dynamo_post(aws, target, body) == -1) {
+			Warnx("aws_dynamo_request: Post failed.");
 			return -1;
 		}
 	
@@ -342,6 +343,8 @@ int aws_dynamo_request(struct aws_handle *aws, const char *target, const char *b
 			retry = aws_dynamo_parse_error_response(response, response_len, &message, &dynamodb_response_code);
 			if (retry == 0) {
 				/* Don't retry. */
+				Warnx("aws_dynamo_request: Aborting request. http code = %d, target='%s' body='%s' response='%s'",
+					http_response_code, target, body, response);
 				break;
 			} else if (retry != 1) {
 				Warnx("aws_dynamo_request: Error evaluating error body. target='%s' body='%s' response='%s'",
