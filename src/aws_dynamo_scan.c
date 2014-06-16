@@ -194,6 +194,11 @@ static int scan_string(void *ctx, const unsigned char *val,  unsigned int len)
 		return 0;
 	}
 
+	if (_ctx->item_index == -1) {
+		Warnx("scan_string - item_index is not set.");
+		return 0;
+	}
+
 	item = &(_ctx->r->items[_ctx->item_index]);
 	attribute = &(item->attributes[_ctx->attribute_index]);
 
