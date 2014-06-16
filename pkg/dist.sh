@@ -41,3 +41,4 @@ mv pkg/aws_dynamo.spec.tmp pkg/aws_dynamo.spec
 
 $THISDIR/rpm-buildpackage pkg/aws_dynamo.spec
 
+git checkout pkg/aws_dynamo.spec
