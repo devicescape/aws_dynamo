@@ -15,7 +15,7 @@ AWS DynamoDB Library for C and C++
 
 %build
 ./autogen.sh
-./configure --prefix=/usr
+./configure --prefix=/usr --disable-static
 make
 
 %install
