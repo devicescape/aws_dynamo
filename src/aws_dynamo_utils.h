@@ -27,9 +27,17 @@
 #include <yajl/yajl_version.h>
 #endif
 
+#ifdef DEBUG
 #define Debug(args...) {fprintf (stderr, "DEBUG: "); fprintf (stderr, args); fprintf (stderr, "\n");}
 #define Warnx(args...) {fprintf (stderr, "WARN:  "); fprintf (stderr, args); fprintf (stderr, "\n");}
 #define Err(args...) {fprintf (stderr, "ERROR: "); fprintf (stderr, args); fprintf (stderr, "\n");}
 #define Errx(args...) {fprintf (stderr, "ERROR: "); fprintf (stderr, args); fprintf (stderr, "\n");}
+#else
+#include <syslog.h>
+#define Debug(args...) {syslog(LOG_DEBUG, args);} 
+#define Warnx(args...) {syslog(LOG_WARNING, args);} 
+#define Err(args...) {syslog(LOG_ERR, args);} 
+#define Errx(args...) {syslog(LOG_ERR, args);} 
+#endif /* DEBUG */
 
 #endif /* _AWS_DYNAMO_UTILS_H_ */
