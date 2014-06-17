@@ -10,6 +10,8 @@ Source: %{name}-%{version}.tar.gz
 %description
 AWS DynamoDB Library for C and C++
 
+%post -p /sbin/ldconfig
+
 %prep
 %setup
 
@@ -20,6 +22,8 @@ make
 
 %install
 make install DESTDIR=${RPM_BUILD_ROOT}
+
+%postun -p /sbin/ldconfig
 
 %clean
 rm -rf $RPM_BUILD_ROOT
