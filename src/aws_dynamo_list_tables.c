@@ -370,7 +370,7 @@ struct aws_dynamo_list_tables_response *aws_dynamo_list_tables(struct aws_handle
 	if ((r =
 	     aws_dynamo_parse_list_tables_response(response,
 						   response_len)) == NULL) {
-		Warnx("aws_dynamo_list_tables: Failed to parse response.");
+		Warnx("aws_dynamo_list_tables: Failed to parse response: '%s'", response);
 		return NULL;
 	}
 

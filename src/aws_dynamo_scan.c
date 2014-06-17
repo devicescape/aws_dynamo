@@ -591,7 +591,7 @@ struct aws_dynamo_scan_response *aws_dynamo_scan(struct aws_handle *aws,
 
 	if ((r = aws_dynamo_parse_scan_response(response, response_len,
 		attributes, num_attributes)) == NULL) {
-		Warnx("aws_dynamo_scan: Failed to parse response.");
+		Warnx("aws_dynamo_scan: Failed to parse response: '%s'", response);
 		return NULL; 
 	}
 

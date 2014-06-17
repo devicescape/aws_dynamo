@@ -404,7 +404,7 @@ struct aws_dynamo_update_item_response *aws_dynamo_update_item(struct aws_handle
 
 	if ((r = aws_dynamo_parse_update_item_response(response, response_len,
 						      attributes, num_attributes)) == NULL) {
-		Warnx("aws_dynamo_update_item: Failed to parse response.");
+		Warnx("aws_dynamo_update_item: Failed to parse response: '%s'", response);
 		return NULL;
 	}
 

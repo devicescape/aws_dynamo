@@ -558,7 +558,7 @@ struct aws_dynamo_describe_table_response *aws_dynamo_describe_table(struct
 	}
 
 	if ((r = aws_dynamo_parse_describe_table_response(response, response_len)) == NULL) {
-		Warnx("aws_dynamo_describe_table: Failed to parse response.");
+		Warnx("aws_dynamo_describe_table: Failed to parse response: '%s'", response);
 		return NULL;
 	}
 

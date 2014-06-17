@@ -224,7 +224,7 @@ struct aws_dynamo_batch_write_item_response
 	}
 
 	if ((r = aws_dynamo_parse_batch_write_item_response(response, response_len)) == NULL) {
-		Warnx("aws_dynamo_batch_write_item: Failed to parse response.");
+		Warnx("aws_dynamo_batch_write_item: Failed to parse response: '%s'", response);
 		return NULL;
 	}
 

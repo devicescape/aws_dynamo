@@ -553,7 +553,7 @@ struct aws_dynamo_batch_get_item_response *aws_dynamo_batch_get_item(struct aws_
 
 	if ((r = aws_dynamo_parse_batch_get_item_response(response, response_len,
 						      tables, num_tables)) == NULL) {
-		Warnx("aws_dynamo_batch_get_item: Failed to parse response.");
+		Warnx("aws_dynamo_batch_get_item: Failed to parse response: '%s'", response);
 		return NULL;
 	}
 
