@@ -35,6 +35,33 @@ static void test_aws_dynamo_parse_scan_response(const char *json,
 #define NETWORK_IDX_TAG_XTYPE_TABLE_TAG_XTYPE	"tag_xtype"
 #define NETWORK_IDX_TAG_XTYPE_TABLE_SSID			"ssid"
 
+static void test_parse_scan_response_empty(void) {
+	struct aws_dynamo_scan_response *r;
+	struct aws_dynamo_attribute attributes[] = {
+		{
+			.type = AWS_DYNAMO_STRING,
+			.name = NETWORK_IDX_TAG_XTYPE_TABLE_TAG_XTYPE,
+			.name_len = strlen(NETWORK_IDX_TAG_XTYPE_TABLE_TAG_XTYPE),
+		},
+		{
+			.type = AWS_DYNAMO_STRING,
+			.name = NETWORK_IDX_TAG_XTYPE_TABLE_SSID,
+			.name_len = strlen(NETWORK_IDX_TAG_XTYPE_TABLE_SSID),
+		},
+	};
+	const char *json = "{\"ConsumedCapacityUnits\":109.0,\"Count\":0,\"Items\":[],\"LastEvaluatedKey\":{\"HashKeyElement\":{\"S\":\"FALLBACK_336e396b76366762656c\"}},\"ScannedCount\":14265}";
+
+	r = aws_dynamo_parse_scan_response(json, strlen(json), attributes, sizeof(attributes) / sizeof(attributes[0]));
+
+	assert(r != NULL);
+	assert(r->count == 0);
+	assert(r->scanned_count == 14265);
+	assert(strcmp(r->hash_key->type, "S") == 0);
+	assert(strcmp(r->hash_key->value, "FALLBACK_336e396b76366762656c") == 0);
+	aws_dynamo_dump_scan_response(r);
+	aws_dynamo_free_scan_response(r);
+}
+
 static void test_parse_scan_response_full(void) {
 	struct aws_dynamo_attribute attributes[] = {
 		{
@@ -54,6 +81,7 @@ static void test_parse_scan_response_full(void) {
 
 static void test_parse_scan_response(void) {
 	test_parse_scan_response_full();
+	test_parse_scan_response_empty();
 }
 
 int main(int argc, char *argv[]) {

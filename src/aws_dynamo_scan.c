@@ -180,8 +180,6 @@ static int scan_number(void * ctx, const char *val, unsigned int len)
 static int scan_string(void *ctx, const unsigned char *val,  unsigned int len)
 {  
 	struct scan_ctx *_ctx = (struct scan_ctx *) ctx;
-	struct aws_dynamo_item *item;
-	struct aws_dynamo_attribute *attribute;
 #ifdef DEBUG_PARSER
 	char buf[len + 1];
 	snprintf(buf, len + 1, "%s", val);
@@ -189,21 +187,23 @@ static int scan_string(void *ctx, const unsigned char *val,  unsigned int len)
 	Debug("scan_string, val = %s, enter state '%s'", buf, parser_state_string(_ctx->parser_state));
 #endif /* DEBUG_PARSER */
 
-	if (_ctx->r->items == NULL) {
-		Warnx("scan_string - items is NULL, have we not gotten Count yet?");
-		return 0;
-	}
-
-	if (_ctx->item_index == -1) {
-		Warnx("scan_string - item_index is not set.");
-		return 0;
-	}
-
-	item = &(_ctx->r->items[_ctx->item_index]);
-	attribute = &(item->attributes[_ctx->attribute_index]);
-
 	switch (_ctx->parser_state) {
 		case PARSER_STATE_ATTRIBUTE_VALUE: {
+			struct aws_dynamo_item *item;
+			struct aws_dynamo_attribute *attribute;
+
+			if (_ctx->r->items == NULL) {
+				Warnx("scan_string - items is NULL, have we not gotten Count yet?");
+				return 0;
+			}
+
+			if (_ctx->item_index == -1) {
+				Warnx("scan_string - item_index is not set.");
+				return 0;
+			}
+
+			item = &(_ctx->r->items[_ctx->item_index]);
+			attribute = &(item->attributes[_ctx->attribute_index]);
 			if (aws_dynamo_parse_attribute_value(attribute, val, len) != 1) {
 				Warnx("scan_string - attribute parse failed, item %d, attribute %d",
 					_ctx->item_index, _ctx->attribute_index);

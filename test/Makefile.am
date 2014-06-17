@@ -10,7 +10,7 @@ TESTS= \
 	list_tables.test \
 	put_item.test \
 	query.test \
-	setup.test
+	setup.test \
 	scan.test \
 	sigv4.test \
 	update_item.test
