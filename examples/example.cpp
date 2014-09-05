@@ -19,6 +19,7 @@
 #include <iostream>
 
 #include <string.h>
+#include <unistd.h>
 #include <aws_dynamo/aws_dynamo.h>
 
 #define USERNAME_ATTRIBUTE_NAME		"username"
