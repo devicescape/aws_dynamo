@@ -208,7 +208,7 @@ void aws_free_session_token(struct aws_session_token *token)
 }
 
 
-char *aws_dynamo_get_canonicalized_headers(struct http_headers *headers) {
+static char *aws_dynamo_get_canonicalized_headers(struct http_headers *headers) {
     int i;
 	int canonical_headers_len = 0;
 	char *canonical_headers;
