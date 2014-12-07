@@ -1,7 +1,7 @@
 Source: aws-dynamo
 Priority: optional
 Maintainer: David Kimdon <david.kimdon@devicescape.com>
-Build-Depends: debhelper (>= 8.0.0), autotools-dev
+Build-Depends: debhelper (>= 8.0.0), autotools-dev, dh-autoreconf, libyajl-dev, libcurl4-openssl-dev
 Standards-Version: 3.9.4
 Section: libs
 Homepage: https://github.com/devicescape/aws_dynamo
