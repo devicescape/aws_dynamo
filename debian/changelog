@@ -1,0 +1,5 @@
+aws-dynamo (0.1) unstable; urgency=low
+
+  * Initial creation of Debian package.
+
+ -- David Kimdon <david.kimdon@devicescape.com>  Sun, 07 Dec 2014 09:20:18 -0800
