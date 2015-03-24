@@ -95,6 +95,7 @@ struct aws_handle *aws_init(const char *aws_id, const char *aws_key) {
 	aws->dynamo_https = AWS_DYNAMO_DEFAULT_HTTPS;
 	aws->dynamo_host = NULL;
 	aws->dynamo_port = 0;
+	aws->dynamo_region = NULL;
 
 	return aws;
 
@@ -116,6 +117,7 @@ void aws_deinit(struct aws_handle *aws) {
 		free(aws->aws_id);
 		free(aws->aws_key);
 		free(aws->dynamo_host);
+		free(aws->dynamo_region);
 		aws_free_session_token(aws->token);
 
 		free(aws);
@@ -292,6 +294,7 @@ int aws_post(struct aws_handle *aws, const char *aws_service, const char *target
 	char *url = NULL;
 	const char *scheme;
 	const char *host;
+	const char *region;
 	const char *aws_secret_access_key;
 	const char *aws_access_key_id;
 	char yyyy_mm_dd[16];
@@ -309,6 +312,11 @@ int aws_post(struct aws_handle *aws, const char *aws_service, const char *target
             host = aws->dynamo_host;
         } else {
             host = AWS_DYNAMO_DEFAULT_HOST;
+        }
+        if (aws->dynamo_region) {
+            region = aws->dynamo_region;
+        } else {
+            region = AWS_DYNAMO_DEFAULT_REGION;
         }
 	} else if (strcmp(aws_service, "kinesis") == 0) {
 		scheme = "https";  /*FIXME: This is only supported in HTTPS, ugh it will be slower....*/
@@ -402,7 +410,7 @@ int aws_post(struct aws_handle *aws, const char *aws_service, const char *target
 
 	string_to_sign = aws_sigv4_create_string_to_sign(
 		iso8601_basic_date, yyyy_mm_dd,
-		"us-east-1" /* FIXME - hard coded region. */,
+		region,
 		aws_service, 
 		hashed_canonical_request);
 	if (string_to_sign == NULL) {
@@ -412,7 +420,7 @@ int aws_post(struct aws_handle *aws, const char *aws_service, const char *target
 
 	signature = aws_sigv4_create_signature(aws_secret_access_key,
 		yyyy_mm_dd, 
-		"us-east-1" /* FIXME - hard coded region. */,
+		region,
 		aws_service,
 		string_to_sign);
 
@@ -423,8 +431,8 @@ int aws_post(struct aws_handle *aws, const char *aws_service, const char *target
 
 	n = snprintf(authorization, sizeof(authorization),
                  /* FIXME - hard coded region */
-                 "AWS4-HMAC-SHA256 Credential=%s/%s/us-east-1/%s/aws4_request,SignedHeaders=%s,Signature=%s", 
-                 aws_access_key_id, yyyy_mm_dd, aws_service, signed_headers, signature);
+                 "AWS4-HMAC-SHA256 Credential=%s/%s/%s/%s/aws4_request,SignedHeaders=%s,Signature=%s", 
+                 aws_access_key_id, yyyy_mm_dd, region, aws_service, signed_headers, signature);
 
 	if (n == -1 || n >= sizeof(authorization)) {
 		Warnx("aws_post: authorization truncated");

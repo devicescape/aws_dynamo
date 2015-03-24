@@ -52,6 +52,7 @@ struct aws_handle {
 	int dynamo_https;
 	int dynamo_port;
 	char *dynamo_host;
+	char *dynamo_region;
 
 };
 

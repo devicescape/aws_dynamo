@@ -26,6 +26,7 @@ extern "C" {
 #endif
 
 #define AWS_DYNAMO_DEFAULT_HOST "dynamodb.us-east-1.amazonaws.com"
+#define AWS_DYNAMO_DEFAULT_REGION "us-east-1"
 
 /* AWS DynamoDB HTTP headers names.  These are all lowercase
 	to simplify the signature calculation. */
@@ -260,6 +261,7 @@ void aws_dynamo_set_https_certificate_file(struct aws_handle *aws, const char *c
  * aws_dynamo_set_endpoint() - Set the endpoint to use for DynamoDB requests.
  * @aws:	Library handle.
  * @host:	Endpoint hostname (ex. 'dynamodb.us-west-2.amazonaws.com').
+ * @region:	Endpoint region (ex. 'us-east-1').
  *
  * The endpoint is the host to use for DynamoDB requests.  See the list
  * of supported endpoints here:
@@ -270,7 +272,7 @@ void aws_dynamo_set_https_certificate_file(struct aws_handle *aws, const char *c
  *
  * Return: 0 on success, -1 on failure to allocate a copy of @host.
  */
-int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host);
+int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host, const char *region);
 
 /**
  * aws_dynamo_set_port() - Set the TCP port to use for DynamoDB requests.
