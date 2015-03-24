@@ -844,15 +844,23 @@ void aws_dynamo_set_https_certificate_file(struct aws_handle *aws, const char *f
 	http_set_https_certificate_file(aws->http, filename);
 }
 
-int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host) {
-	char *h;
+int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host, const char *region) {
+	char *h, *r;
 
 	h = strdup(host);
 	if (h == NULL) {
 		Warnx("aws_dynamo_set_endpoint: failed ot allocate host");
 		return -1;
-	}	
+	}
+	r = strdup(region);
+	if (r == NULL)
+	{
+		Warnx("aws_dynamo_set_endpoint: failed ot allocate region");
+		free(h);
+		return -1;
+	}
 	aws->dynamo_host = h;
+	aws->dynamo_region = r;
 	return 0;
 }
 
