@@ -417,6 +417,37 @@ int aws_dynamo_json_get_double(const char *val, size_t len, double *d)
 	return 0;
 }
 
+static int aws_dynamo_json_get_aws_dynamo_double_t(const char *val, size_t len, aws_dynamo_double_t *d)
+{
+	char buf[256];
+
+	if (len + 1 > sizeof(buf)) {
+		Warnx("aws_dynamo_json_get_aws_dynamo_double_t: double string too long.");
+		return -1;
+	} else {
+		char *endptr;
+		aws_dynamo_double_t temp;
+
+		snprintf(buf, len + 1, "%s", val);
+
+		errno = 0;
+		temp = strtold(buf, &endptr);
+
+		if (errno != 0) {
+			Warnx("aws_dynamo_json_get_aws_dynamo_double_t: double conversion failed.");
+			return -1;
+		}
+
+		if (*endptr == '\0') {
+			*d = temp;
+		} else {
+			Warnx("aws_dynamo_json_get_aws_dynamo_double_t: double conversion incomplete.");
+			return -1;
+		}
+	}
+	return 0;
+}
+
 int aws_dynamo_json_get_long_long_int(const unsigned char *val, size_t len, long long int *i)
 {
 	char buf[64];
@@ -675,10 +706,25 @@ int aws_dynamo_parse_attribute_value(struct aws_dynamo_attribute *attribute, con
 					break;
 				}
 				case AWS_DYNAMO_NUMBER_DOUBLE: {
-					/* Double conversion is not implemented for now since we don't need it. */
-					Warnx("aws_dynamo_parse_attribute_value: double conversion not implemented");
-					return 0;
+					aws_dynamo_double_t addt;
 
+					if (aws_dynamo_json_get_aws_dynamo_double_t(val, len, &addt) == -1) {
+						Warnx("aws_dynamo_parse_attribute_value: failed to parse number");
+						return 0;
+					}
+
+					if (attribute->value.number.value.double_val != NULL) {
+						Warnx("aws_dynamo_parse_attribute_value: number is already set?");
+						return 0;
+					}
+
+					attribute->value.number.value.double_val = calloc(sizeof(aws_dynamo_double_t), 1);
+					if (attribute->value.number.value.double_val == NULL) {
+						Warnx("aws_dynamo_parse_attribute_value: number alloc failed");
+						return 0;
+					}
+
+					*(attribute->value.number.value.double_val) = addt;
 					break;
 				}
 				default: {
@@ -776,7 +822,15 @@ struct aws_dynamo_item *aws_dynamo_copy_item(struct aws_dynamo_item *item) {
 						break;
 					}
 					case AWS_DYNAMO_NUMBER_DOUBLE: {
-						Warnx("aws_dynamo_copy_item: double support not implemented");
+						copy->attributes[j].value.number.type = AWS_DYNAMO_NUMBER_DOUBLE;
+						if (attribute->value.number.value.double_val != NULL) {
+							copy->attributes[j].value.number.value.double_val = calloc(sizeof(aws_dynamo_double_t), 1);
+							if (copy->attributes[j].value.number.value.double_val == NULL) {
+								Warnx("aws_dynamo_copy_item: calloc() for double val failed.");
+								goto error;
+							}
+							*(copy->attributes[j].value.number.value.double_val) = *(attribute->value.number.value.double_val);
+						}
 						break;
 					}
 					default: {

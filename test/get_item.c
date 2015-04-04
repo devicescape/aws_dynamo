@@ -44,9 +44,15 @@ static void test_parse_get_item_response_example(void) {
 			.name = "status",
 			.name_len = strlen("status"),
 		},
+		{
+			.type = AWS_DYNAMO_NUMBER,
+			.name = "size",
+			.name_len = strlen("size"),
+			.value.number.type = AWS_DYNAMO_NUMBER_DOUBLE,
+		},
 	};
 
-	test_aws_dynamo_parse_get_item_response("{\"Item\": {\"friends\":{\"SS\":[\"Lynda, Aaron\"]}, \"status\":{\"S\":\"online\"} }, \"ConsumedCapacityUnits\": 1 }", attributes, sizeof(attributes) / sizeof(attributes[0]));
+	test_aws_dynamo_parse_get_item_response("{\"Item\": {\"friends\":{\"SS\":[\"Lynda, Aaron\"]}, \"status\":{\"S\":\"online\"},\"size\":{\"N\":\"2.5\"} }, \"ConsumedCapacityUnits\": 1 }", attributes, sizeof(attributes) / sizeof(attributes[0]));
 }
 
 static void test_parse_get_item_response(void) {
