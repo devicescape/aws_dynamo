@@ -108,14 +108,14 @@ int http_fetch_url(void *handle, const char *url,
 		   struct http_headers *headers);
 
 /**
- * _http_post - post a form back to the specified URL, internal function
+ * http_post - post a form back to the specified URL
  * @handle: HTTP handle
  * @url: URL to post to
  * @data: data string to send with post
  * @headers: a list of headers to be included in the request
  * Returns: HTTP_* result code (HTTP_OK, etc.)
  */
-int _http_post(void *handle, const char *url,
+int http_post(void *handle, const char *url,
 		    const char *data,
 		   struct http_headers *headers);
 

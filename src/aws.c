@@ -460,10 +460,10 @@ int aws_post(struct aws_handle *aws, const char *aws_service, const char *target
 		}
 	}
 
-	if (_http_post(aws->http, url, body, &headers) != HTTP_OK) {
+	if (http_post(aws->http, url, body, &headers) != HTTP_OK) {
 		Warnx("aws_post: HTTP post failed, will retry.");
 		usleep(100000);
-		if (_http_post(aws->http, url, body, &headers) != HTTP_OK) {
+		if (http_post(aws->http, url, body, &headers) != HTTP_OK) {
 			Warnx("aws_post: Retry failed.");
 			goto failure;
 		}

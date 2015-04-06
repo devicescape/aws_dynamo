@@ -231,7 +231,7 @@ int http_fetch_url(void *handle, const char *url,
  * @headers: a list of headers to be included in the request
  * Returns: HTTP_* result code (HTTP_OK, etc.)
  */
-static int http_post(void *handle, const char *url,
+static int _http_post(void *handle, const char *url,
 		   const char *data,
 		   struct http_headers *headers)
 {
@@ -378,7 +378,7 @@ static int _http_post_quiet(void *handle, const char *url,
 	struct http_buffer *buf = h->buf;
 	int rv;
        
-	rv = http_post(handle, url, data, headers);
+	rv = _http_post(handle, url, data, headers);
 
 	if (buf->cur >= buf->max)
 		buf->cur = buf->max - 1;
@@ -395,7 +395,7 @@ static int _http_post_quiet(void *handle, const char *url,
  * @headers: a list of headers to be included in the request
  * Returns: HTTP_* result code (HTTP_OK, etc.)
  */
-int _http_post(void *handle, const char *url,
+int http_post(void *handle, const char *url,
 		    const char *data,
 		   struct http_headers *hdrs)
 {
