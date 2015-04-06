@@ -209,26 +209,12 @@ int http_fetch_url(void *handle, const char *url,
  * @headers: a list of headers to be included in the request
  * Returns: HTTP_* result code (HTTP_OK, etc.)
  */
-int http_post(void *handle, const char *url,
+static int http_post(void *handle, const char *url,
 		   const char *data,
 		   struct http_headers *headers)
 {
 	return http_transaction(handle, url, data,
 				HTTP_NOCLOSE, headers);
-}
-
-/**
- * http_clear_cookies - clear any cookies stored by the http library
- * @handle: HTTP handle
- */
-void http_clear_cookies(void *handle)
-{
-#if LIBCURL_VERSION_NUM >= 0x070e01 /* Only if this version supports it */
-	struct http_curl_handle *h = handle;
-	CURL *curl = h->curl;
-	
-	curl_easy_setopt(curl, CURLOPT_COOKIELIST, "ALL");
-#endif
 }
 
 /**
@@ -405,93 +391,6 @@ size_t http_receive_data(void *ptr, size_t size, size_t nmemb, void *arg)
 }
 
 /**
- * _http_fetch_url_quiet - fetch a URL into the specified buffer, 
- * 	internal function, does not print debug info
- * @handle: HTTP library handle
- * @url: URL to fetch
- * @con_close: close the HTTP connection? (1=yes; 0=no)
- * @hdrs: a list of headers to be included in the request or NULL
- * Returns: HTTP_* result code (HTTP_OK, etc.)
- */
-int _http_fetch_url_quiet(void *handle, const char *url,
-		    int con_close,
-		    struct http_headers *hdrs)
-{
-	struct http_curl_handle *h = handle;
-	struct http_buffer *buf = h->buf;
-	int rv;
-	struct http_headers headers;
-	int num_headers;
-	int i = 0;
-
-	num_headers = (hdrs ? hdrs->count : 0);
-
-	headers.count = num_headers;
-	headers.entries = calloc(num_headers, sizeof(headers.entries[0]));
-	if (headers.entries == NULL)
-		return HTTP_FAILURE;
-
-	if (hdrs) {
-		for (; i < (int)(hdrs->count); i++) {
-			headers.entries[i].name = hdrs->entries[i].name;
-			headers.entries[i].value = hdrs->entries[i].value;
-		}
-	}
-
-	rv = http_fetch_url(handle, url, con_close,
-			    &headers);
-
-	if (buf->cur >= buf->max)
-		buf->cur = buf->max - 1;
-	buf->data[buf->cur] = '\0';
-
-	free(headers.entries);
-
-	return rv;
-}
-
-/**
- * _http_fetch_url - fetch a URL into the specified buffer, internal function
- * @handle: HTTP library handle
- * @url: URL to fetch
- * @con_close: close the HTTP connection? (1=yes; 0=no)
- * @hdrs: a list of headers to be included in the request or NULL
- * Returns: HTTP_* result code (HTTP_OK, etc.)
- */
-int _http_fetch_url(void *handle, const char *url,
-		    int con_close,
-		    struct http_headers *hdrs)
-{
-	int rv;
-#if DEBUG_HTTP
-	struct http_curl_handle *h = handle;
-	struct http_buffer *buf = h->buf;
-	int i;
-
-	Debug("HTTP GET: %s (%s)\n", url,
-		  con_close ? "CLOSE" : "NO_CLOSE");
-
-	if (hdrs) {
-		for (i = 0 ; i < hdrs->count; i++) {
-			Debug("HTTP HEADER: %s: %s\n", hdrs->entries[i].name, hdrs->entries[i].value);
-		}
-	}
-#endif
-
-	rv = _http_fetch_url_quiet(handle, url, con_close,
-				   hdrs);
-
-#if DEBUG_HTTP
-	Debug("HTTP RECV %d BYTES:\n%s\n", buf->cur, buf->data);
-
-	if (rv == HTTP_CERT_FAILURE)
-		Debug("HTTP ERROR: certificate problem\n");
-#endif
-
-	return rv;
-}
-
-/**
  * _http_post_quiet - post a form back to the specified URL,
  * 	internal function, does not print debug info
  * @handle: HTTP handle
@@ -500,7 +399,7 @@ int _http_fetch_url(void *handle, const char *url,
  * @headers: a list of headers to be included in the request
  * Returns: HTTP_* result code (HTTP_OK, etc.)
  */
-int _http_post_quiet(void *handle, const char *url,
+static int _http_post_quiet(void *handle, const char *url,
 		    const char *data,
 		   struct http_headers *headers)
 {

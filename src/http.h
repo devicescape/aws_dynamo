@@ -25,20 +25,6 @@
 #define HTTP_NOCLOSE	0
 #define HTTP_CLOSE	1
 
-/* Allow cert errors or not */
-#define HTTP_NO_CERT_ERRORS	0
-#define HTTP_IGNORE_CERT_ERRORS	1
-
-/* Whether or not to honor the HTML base tag when making full URLs. */
-#define HTTP_NO_USE_BASE	0
-#define HTTP_USE_BASE	1
-
-/* http_alive_check return values */
-#define HTTP_DEAD_NONET		-2 
-#define HTTP_DEAD		-1 
-#define HTTP_ALIVE		0 
-#define HTTP_ALIVE_NOTIFY	1 
-
 /* http_fetch_url() and http_post() return values. */
 #define HTTP_OK			0 
 #define HTTP_FAILURE		-1 
@@ -109,31 +95,6 @@ struct http_headers {
 size_t http_receive_data(void *ptr, size_t size, size_t nmemb, void *arg);
 
 /**
- * _http_fetch_url - fetch a URL into the specified buffer, internal function
- * @handle: HTTP library handle
- * @url: URL to fetch
- * @con_close: close the HTTP connection? (1=yes; 0=no)
- * @hdrs: a list of headers to be included in the request or NULL
- * Returns: HTTP_* result code (HTTP_OK, etc.)
- */
-int _http_fetch_url(void *handle, const char *url,
-		    int con_close,
-		    struct http_headers *hdrs);
-
-/**
- * _http_fetch_url_quiet - fetch a URL into the specified buffer, 
- * 	internal function, does not print debug info
- * @handle: HTTP library handle
- * @url: URL to fetch
- * @con_close: close the HTTP connection? (1=yes; 0=no)
- * @hdrs: a list of headers to be included in the request or NULL
- * Returns: HTTP_* result code (HTTP_OK, etc.)
- */
-int _http_fetch_url_quiet(void *handle, const char *url,
-			  int con_close,
-			  struct http_headers *hdrs);
-
-/**
  * http_fetch_url - fetch a URL into the specified buffer, system integration
  * 		    function
  * @handle: HTTP library handle
@@ -156,32 +117,6 @@ int http_fetch_url(void *handle, const char *url,
  */
 int _http_post(void *handle, const char *url,
 		    const char *data,
-		   struct http_headers *headers);
-
-/**
- * _http_post_quiet - post a form back to the specified URL,
- * 	internal function, does not print debug info
- * @handle: HTTP handle
- * @url: URL to post to
- * @data: data string to send with post
- * @headers: a list of headers to be included in the request
- * Returns: HTTP_* result code (HTTP_OK, etc.)
- */
-int _http_post_quiet(void *handle, const char *url,
-		    const char *data,
-		   struct http_headers *headers);
-
-/**
- * http_post - post a form back to the specified URL, system integration
- * 		    function
- * @handle: HTTP handle
- * @url: URL to post to
- * @data: data string to send with post
- * @headers: a list of headers to be included in the request
- * Returns: HTTP_* result code (HTTP_OK, etc.)
- */
-int http_post(void *handle, const char *url,
-		   const char *data,
 		   struct http_headers *headers);
 
 /**
@@ -232,12 +167,6 @@ const char *http_get_url(void *handle);
  * @buf: buffer to reset
  */
 void http_reset_buffer(struct http_buffer *buf);
-
-/**
- * http_clear_cookies - clear any cookies stored by the http library
- * @handle: HTTP handle
- */
-void http_clear_cookies(void *handle);
 
 int http_set_https_certificate_file(void *handle, const char *filename);
 
