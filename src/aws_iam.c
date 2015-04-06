@@ -352,7 +352,7 @@ struct aws_session_token *aws_iam_load_default_token(struct aws_handle *aws) {
 	char creds_url[128];
 	int n;
 
-	if (http_fetch_url(aws->http, DEFAULT_TOKEN_URL,
+	if (http_get(aws->http, DEFAULT_TOKEN_URL,
 		HTTP_CLOSE, NULL) != HTTP_OK) {
 		Warnx("aws_iam_load_default_token: Failed to get role.");
 		return NULL;
@@ -372,7 +372,7 @@ struct aws_session_token *aws_iam_load_default_token(struct aws_handle *aws) {
 		return NULL;
 	}
 
-	if (http_fetch_url(aws->http, creds_url, HTTP_CLOSE, NULL) != HTTP_OK) {
+	if (http_get(aws->http, creds_url, HTTP_CLOSE, NULL) != HTTP_OK) {
 		Warnx("aws_iam_load_default_token: Failed to get security credentials.");
 		return NULL;
 	}

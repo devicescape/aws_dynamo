@@ -25,7 +25,7 @@
 #define HTTP_NOCLOSE	0
 #define HTTP_CLOSE	1
 
-/* http_fetch_url() and http_post() return values. */
+/* http_get() and http_post() return values. */
 #define HTTP_OK			0 
 #define HTTP_FAILURE		-1 
 #define HTTP_CERT_FAILURE	-2 
@@ -74,7 +74,7 @@ struct http_headers {
 };
 
 /**
- * http_fetch_url - fetch a URL into the specified buffer, system integration
+ * http_get - fetch a URL into the specified buffer, system integration
  * 		    function
  * @handle: HTTP library handle
  * @url: URL to fetch
@@ -82,7 +82,7 @@ struct http_headers {
  * @headers: a list of headers to be included in the request
  * Returns: HTTP_* result code (HTTP_OK, etc.)
  */
-int http_fetch_url(void *handle, const char *url,
+int http_get(void *handle, const char *url,
 		   int con_close,
 		   struct http_headers *headers);
 
