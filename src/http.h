@@ -51,16 +51,12 @@ char *http_url_encode(void *handle, const char *string);
  * @buffer: pointer to allocated buffer
  * @max: maximum size of buffer
  * @cur: current length of content
- * @url: effective URL for transfer (after any redirects)
- * @base: the value of the 'href' attribute of the base HTML tag, if present
  * @response: HTTP response code
  */
 struct http_buffer {
 	unsigned char *data;
 	unsigned int max;
 	unsigned int cur;
-	char *url;
-	char *base;
 	long response;
 };
 
@@ -154,13 +150,6 @@ char *http_escape(const char *str);
 const unsigned char *http_get_data(void *handle, int *len);
 
 int http_get_response_code(void *handle);
-
-/**
- * http_get_url - get the current real URL from a buffer
- * @handle: HTTP library handle
- * Returns: read-only pointer to URL
- */
-const char *http_get_url(void *handle);
 
 /**
  * http_reset_buffer - reset the pointers in a buffer

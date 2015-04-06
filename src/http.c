@@ -60,8 +60,6 @@ static struct http_buffer *http_new_buffer(size_t size)
 static void http_free_buffer(struct http_buffer *buf)
 {
 	free(buf->data);
-	free(buf->url);
-	free(buf->base);
 	free(buf);
 }
 
@@ -71,10 +69,6 @@ static void http_free_buffer(struct http_buffer *buf)
  */
 void http_reset_buffer(struct http_buffer *buf)
 {
-	free(buf->url);
-	buf->url = NULL;
-	free(buf->base);
-	buf->base = NULL;
 	buf->cur = 0;
 	memset(buf->data, 0, buf->max);
 }
@@ -144,7 +138,6 @@ static int http_transaction(void *handle, const char *url,
 		   	    struct http_headers *hdrs)
 {
 	int ret;
-	char *effective_url;
 	struct http_curl_handle *h = handle;
 	CURL *curl = h->curl;
 	struct curl_slist *headers = NULL;
@@ -193,10 +186,6 @@ static int http_transaction(void *handle, const char *url,
 	if ((ret = _curl_easy_perform(curl)) == 0) {
 		/* Get a copy of the response code */
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &buf->response);
-
-		/* Get a copy of the effective URL */
-		curl_easy_getinfo(curl, CURLINFO_EFFECTIVE_URL, &effective_url);
-		buf->url = strdup(effective_url);
 	}
 
 	if (hdrs) {	
@@ -322,19 +311,6 @@ int http_get_response_code(void *handle)
 	struct http_buffer *buf = h->buf;
 
 	return buf->response;
-}
-
-/**
- * http_get_url - get the current real URL from a buffer
- * @handle: HTTP library handle
- * @buf: pointer to buffer structure
- * Returns: read-only pointer to URL
- */
-const char *http_get_url(void *handle)
-{
-	struct http_curl_handle *h = handle;
-	struct http_buffer *buf = h->buf;
-	return buf->url;
 }
 
 /**
