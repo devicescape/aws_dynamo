@@ -67,7 +67,7 @@ static void http_free_buffer(struct http_buffer *buf)
  * http_reset_buffer - reset the pointers in a buffer
  * @buf: buffer to reset
  */
-void http_reset_buffer(struct http_buffer *buf)
+static void http_reset_buffer(struct http_buffer *buf)
 {
 	buf->cur = 0;
 	memset(buf->data, 0, buf->max);
@@ -221,35 +221,19 @@ static int http_transaction(void *handle, const char *url,
 }
 
 /**
- * http_fetch_url - fetch a URL into the specified buffer
+ * http_get - fetch a URL into the specified buffer
  * @handle: HTTP handle
  * @url: URL to fetch
  * @con_close: close connection? (1=yes; 0=no)
  * @headers: a list of headers to be included in the request
  * Returns: HTTP_* result code (HTTP_OK, etc.)
  */
-int http_fetch_url(void *handle, const char *url,
+int http_get(void *handle, const char *url,
 		   int con_close,
 		   struct http_headers *headers)
 {
 	return http_transaction(handle, url, NULL,
 				con_close, headers);
-}
-
-/**
- * http_post - post a form back to the specified URL
- * @handle: HTTP handle
- * @url: URL to post to
- * @data: data string to send with post
- * @headers: a list of headers to be included in the request
- * Returns: HTTP_* result code (HTTP_OK, etc.)
- */
-static int _http_post(void *handle, const char *url,
-		   const char *data,
-		   struct http_headers *headers)
-{
-	return http_transaction(handle, url, data,
-				HTTP_NOCLOSE, headers);
 }
 
 /**
@@ -338,33 +322,7 @@ int http_get_response_code(void *handle)
 }
 
 /**
- * _http_post_quiet - post a form back to the specified URL,
- * 	internal function, does not print debug info
- * @handle: HTTP handle
- * @url: URL to post to
- * @data: data string to send with post
- * @headers: a list of headers to be included in the request
- * Returns: HTTP_* result code (HTTP_OK, etc.)
- */
-static int _http_post_quiet(void *handle, const char *url,
-		    const char *data,
-		   struct http_headers *headers)
-{
-	struct http_curl_handle *h = handle;
-	struct http_buffer *buf = h->buf;
-	int rv;
-       
-	rv = _http_post(handle, url, data, headers);
-
-	if (buf->cur >= buf->max)
-		buf->cur = buf->max - 1;
-	buf->data[buf->cur] = '\0';
-
-	return rv;
-}
-
-/**
- * _http_post - post a form back to the specified URL, internal function
+ * http_post - post a form back to the specified URL, internal function
  * @handle: HTTP handle
  * @url: URL to post to
  * @data: data string to send with post
@@ -390,7 +348,7 @@ int http_post(void *handle, const char *url,
 	}
 #endif
 
-	rv = _http_post_quiet(handle, url, data, hdrs);
+	rv = http_transaction(handle, url, data, HTTP_NOCLOSE, hdrs);
 
 	if (buf->cur >= buf->max)
 		buf->cur = buf->max - 1;
