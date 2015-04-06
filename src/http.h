@@ -118,13 +118,6 @@ void http_deinit(void *handle);
 const char *http_strerror(int error);
 
 /**
- * http_escape - encode a string in 'application/x-www-form-urlencoded' format
- * @str: NULL-terminated string to encode
- * Returns: allocated application/x-www-form-urlencoded version of string
- */
-char *http_escape(const char *str);
-
-/**
  * http_get_data - return pointer to raw data buffer (read-only)
  * @buf: pointer to buffer structure
  * @len: length of buffer (out)
