@@ -18,44 +18,66 @@
 
 #define _GNU_SOURCE
 
-#include "aws_dynamo_utils.h"
-
-#include <openssl/sha.h>
-#include <openssl/buffer.h>
-#include <openssl/hmac.h>
-#include <openssl/evp.h>
-
+#include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
-#include <stdio.h>
-
-#include "http.h"
-
-#include <stdio.h>
-
 #include <curl/curl.h>
-#include <string.h>
 
 #include "http.h"
+#include "aws_dynamo_utils.h"
 
 //#define DEBUG_HTTP 1
 
-#define LOCATION	"Location:"
-#define LOCATION_LEN	9
-
 /**
  * http_new_buffer - allocate a new buffer of the specified size
- * @handle: HTTP library handle
  * @size: size of the data buffer
  * Returns: Pointer to the newly allocated buffer, NULL on error
  */
-static struct http_buffer *http_new_buffer(size_t size);
+static struct http_buffer *http_new_buffer(size_t size)
+{
+	struct http_buffer *buf;
+
+	if ((buf = malloc(sizeof(*buf))) == NULL)
+		return NULL;
+	memset(buf, 0, sizeof(*buf));
+
+	if ((buf->data = malloc(size)) == NULL) {
+		free(buf);
+		return NULL;
+	}
+	memset(buf->data, 0, size);
+
+	buf->max = size;
+
+	return buf;
+}
 
 /**
  * http_free_buffer - free a previously allocated buffer
- * @handle: HTTP library handle
+ * @handle: HTTP handle
  * @buf: pointer to buffer
  */
-static void http_free_buffer(struct http_buffer *buf);
+static void http_free_buffer(struct http_buffer *buf)
+{
+	free(buf->data);
+	free(buf->url);
+	free(buf->base);
+	free(buf);
+}
+
+/**
+ * http_reset_buffer - reset the pointers in a buffer
+ * @buf: buffer to reset
+ */
+void http_reset_buffer(struct http_buffer *buf)
+{
+	free(buf->url);
+	buf->url = NULL;
+	free(buf->base);
+	buf->base = NULL;
+	buf->cur = 0;
+	memset(buf->data, 0, buf->max);
+}
 
 struct http_curl_handle {
        CURL *curl;
@@ -273,57 +295,6 @@ void http_deinit(void *handle)
 	curl_easy_cleanup(h->curl);
 	http_free_buffer(h->buf);
 	free(h);
-}
-
-/**
- * http_new_buffer - allocate a new buffer of the specified size
- * @size: size of the data buffer
- * Returns: Pointer to the newly allocated buffer, NULL on error
- */
-static struct http_buffer *http_new_buffer(size_t size)
-{
-	struct http_buffer *buf;
-
-	if ((buf = malloc(sizeof(*buf))) == NULL)
-		return NULL;
-	memset(buf, 0, sizeof(*buf));
-
-	if ((buf->data = malloc(size)) == NULL) {
-		free(buf);
-		return NULL;
-	}
-	memset(buf->data, 0, size);
-
-	buf->max = size;
-
-	return buf;
-}
-
-/**
- * http_free_buffer - free a previously allocated buffer
- * @handle: HTTP handle
- * @buf: pointer to buffer
- */
-static void http_free_buffer(struct http_buffer *buf)
-{
-	free(buf->data);
-	free(buf->url);
-	free(buf->base);
-	free(buf);
-}
-
-/**
- * http_reset_buffer - reset the pointers in a buffer
- * @buf: buffer to reset
- */
-void http_reset_buffer(struct http_buffer *buf)
-{
-	free(buf->url);
-	buf->url = NULL;
-	free(buf->base);
-	buf->base = NULL;
-	buf->cur = 0;
-	memset(buf->data, 0, buf->max);
 }
 
 /**
