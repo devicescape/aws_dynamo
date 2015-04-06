@@ -125,6 +125,30 @@ static int _curl_easy_perform(CURL *curl)
 }
 
 /**
+ * http_receive_data - callback for processing data received over HTTP
+ * @ptr: pointer to the current chunk of data
+ * @size: size of each element
+ * @nmemb: number of elements
+ * @arg: buffer to store chunk in
+ * Returns: amount of data processed
+ */
+static size_t http_receive_data(void *ptr, size_t size, size_t nmemb, void *arg)
+{
+	size_t len = size * nmemb;
+	struct http_buffer *buf = arg;
+
+	if (len > (size_t)(buf->max - buf->cur)) {
+		/* Too much data for buffer */
+		len = buf->max - buf->cur;
+		Warnx("Only storing %zd bytes; buffer too small\n", len);
+	}
+	memcpy(buf->data + buf->cur, ptr, len);
+	buf->cur += len;
+
+	return len;
+}
+
+/**
  * http_transaction - issue an HTTP transaction to the specified URL
  * @handle: HTTP handle
  * @url: URL to post to
@@ -311,30 +335,6 @@ int http_get_response_code(void *handle)
 	struct http_buffer *buf = h->buf;
 
 	return buf->response;
-}
-
-/**
- * http_receive_data - callback for processing data received over HTTP
- * @ptr: pointer to the current chunk of data
- * @size: size of each element
- * @nmemb: number of elements
- * @arg: buffer to store chunk in
- * Returns: amount of data processed
- */
-size_t http_receive_data(void *ptr, size_t size, size_t nmemb, void *arg)
-{
-	size_t len = size * nmemb;
-	struct http_buffer *buf = arg;
-
-	if (len > (size_t)(buf->max - buf->cur)) {
-		/* Too much data for buffer */
-		len = buf->max - buf->cur;
-		Warnx("Only storing %zd bytes; buffer too small\n", len);
-	}
-	memcpy(buf->data + buf->cur, ptr, len);
-	buf->cur += len;
-
-	return len;
 }
 
 /**

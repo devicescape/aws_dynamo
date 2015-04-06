@@ -36,13 +36,6 @@
 #define HTTP_CONTENT_TYPE_HEADER "content-type"
 #define HTTP_HOST_HEADER "host"
 
-struct http_parameter {
-	const char *name;
-	const char *value;
-	struct http_parameter *next;
-};
-
-
 char *http_url_encode(void *handle, const char *string);
 
 /* Internal structure used for raw page data */
@@ -79,16 +72,6 @@ struct http_headers {
 	size_t count;
 	struct http_header *entries;
 };
-
-/**
- * http_receive_data - callback for processing data received over HTTP
- * @ptr: pointer to the current chunk of data
- * @size: size of each element
- * @nmemb: number of elements
- * @arg: buffer to store chunk in
- * Returns: amount of data processed
- */
-size_t http_receive_data(void *ptr, size_t size, size_t nmemb, void *arg);
 
 /**
  * http_fetch_url - fetch a URL into the specified buffer, system integration
@@ -150,12 +133,6 @@ char *http_escape(const char *str);
 const unsigned char *http_get_data(void *handle, int *len);
 
 int http_get_response_code(void *handle);
-
-/**
- * http_reset_buffer - reset the pointers in a buffer
- * @buf: buffer to reset
- */
-void http_reset_buffer(struct http_buffer *buf);
 
 int http_set_https_certificate_file(void *handle, const char *filename);
 
