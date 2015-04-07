@@ -21,7 +21,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <curl/curl.h>
 
 #include "http.h"
 #include "aws_dynamo_utils.h"
@@ -72,6 +71,334 @@ static void http_reset_buffer(struct http_buffer *buf)
 	buf->cur = 0;
 	memset(buf->data, 0, buf->max);
 }
+
+#ifdef AWS_DYNAMO_HTTP_SIM
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <fcntl.h>
+#include <limits.h>
+#include <unistd.h>
+
+#include <sys/types.h>
+#include <regex.h>
+
+/**
+ * http_strerror - obtain user readable error string
+ * @error: error code to look up
+ * Returns: string version of error
+ */
+const char *http_strerror(int error)
+{
+	static char buf[80];
+
+	sprintf(buf, "%d", error);
+
+	return buf;
+}
+
+/**
+ * fetch_file - fetches a file into an HTTP buffer
+ * @buf: the HTTP buffer to fetch into.
+ * @filename: the name of the file to fetch.
+ * Returns: 0 on success; -1 on error.
+ */
+int fetch_file(struct http_buffer *buf, const char *filename)
+{
+	int fd = -1;
+	int ret = -1;
+
+	if (buf == NULL || filename == NULL)
+		goto error;
+
+	/* Open the file */
+	if ((fd = open(filename, O_RDONLY)) < 0) {
+		Warnx("Failed to open file\n");
+		goto error;
+	}
+
+	http_reset_buffer(buf);
+
+	/* Read the file into the buffer */
+	if ((buf->cur = read(fd, buf->data, buf->max - 1)) < 0) {
+		Warnx("Error reading file\n");
+		goto error;
+	}
+
+	/* Close the file */
+	close(fd);
+	fd = -1;
+	ret = 0;
+error:
+	if (fd >= 0)
+		close(fd);
+
+	return ret;
+}
+
+/**
+ * http_transaction - perform an HTTP GET or POST to a simulated URL
+ * @handle: HTTP handle (unused).
+ * @url: the request URL
+ * @buf: the HTTP buffer to place the response in.
+ * @redir: follow redirections automatically? (1=yes; 0=no)
+ * Returns: 0 on success; -1 on failure.
+ */
+int http_transaction(void *handle, const char *initial_url,
+		     struct http_buffer *buf, int redir,
+		     struct http_headers *headers)
+{
+	char *filename = NULL, *effective_file = NULL, *alive_file = NULL;
+	char *redir_file = NULL;
+	int fd = -1;
+	int ret = -1;
+	char *url;
+	struct stat statbuf;
+	
+	url = strdup(initial_url);
+	
+	if (url == NULL) {
+		perror("strdup");
+		return -1;
+	}
+
+	http_reset_buffer(buf);
+
+	do {
+		/* Alive checks use the PORTAL file if not alive, or are created
+		   with alive_reply() when alive. */
+
+		free(filename);
+		if (strncmp(url, "POST-", 5) == 0)
+			sim_get_best_match(url, &filename, 0);
+		else
+			sim_get_best_match(url, &filename, 1);
+
+		if (! filename) {
+			goto done;
+		}
+
+		fetch_file(buf, filename);
+			
+		/* Handle .redir files */
+
+		redir_file = malloc(strlen(filename) + strlen(".redir") + 1);
+		if (! redir_file)
+			goto error;
+		sprintf(redir_file, "%s.redir", filename);
+
+		if ((fd = open(redir_file, O_RDONLY)) >= 0) {
+			char *redir_url;
+	
+			if (stat(redir_file, &statbuf) != 0)
+				goto error;
+
+			redir_url = calloc(statbuf.st_size + 1, 1);
+			if (! redir_url)
+				goto error;
+			if (read(fd, redir_url, statbuf.st_size) != statbuf.st_size) {
+				perror("read");
+				goto error;
+			}
+			close(fd);
+			fd = -1;
+
+			buf->redir = redir_url;
+
+			if (redir == HTTP_FOLLOW) {
+				free(url);
+				url = http_make_full_url(handle, buf,
+							 buf->redir, HTTP_NO_USE_BASE);
+				http_reset_buffer(buf);
+			
+				Debug("Following HTTP redirect to: %s\n",
+						url);
+			}
+		}
+
+		free(redir_file);
+		redir_file = NULL;
+
+	} while (redir == HTTP_FOLLOW);
+		
+	effective_file = malloc(strlen(filename) + strlen(".effective") + 1);
+	if (! effective_file)
+		goto error;
+	sprintf(effective_file, "%s.effective", filename);
+
+	if ((buf->url = sim_read_file(effective_file)) != NULL) {
+		Debug("Effective URL: %s\n", buf->url);
+	} else {
+		if (strncmp(url, "POST-", 5) == 0)
+			buf->url = strdup(url + 5);
+		else
+			buf->url = strdup(url);
+	}
+
+	alive_file = malloc(strlen(filename) + strlen(".alive") + 1);
+	if (! alive_file)
+		goto error;
+	sprintf(alive_file, "%s.alive", filename);
+
+	if (stat(alive_file, &statbuf) == 0) {
+		alive = 1;
+	}
+
+done:
+	ret = 0;
+error:
+
+	if (fd >= 0)
+		close(fd);
+	free(filename);
+	free(effective_file);
+	free(alive_file);
+	free(redir_file);
+	free(url);
+
+	return ret;
+}
+
+
+/**
+ * http_get - fetch a URL into the specified buffer
+ * @handle: HTTP handle
+ * @url: URL to fetch
+ * @buf: http buffer to store content in
+ * @redir: follow redirections automatically? (1=yes; 0=no)
+ * @ignore_cert: ignore certificate validation errors (1=yes; 0=no)
+ * @con_close: close connection? (1=yes; 0=no)
+ * @headers: a list of headers to be included in the request
+ * Returns: result code
+ */
+int http_get(void *handle, const char *url,
+		   int con_close,
+		   struct http_headers *headers)
+{
+	int i;
+
+	Debug("HTTP GET %s\n", url);
+
+	if (headers) {
+		for (i = 0; i < headers->count; i++) {
+			Debug("HTTP HEADER %s: %s\n",
+				  headers->entries[i].name,
+				  headers->entries[i].value);
+		}
+	}
+	return http_transaction(handle, url, buf, redir, headers);
+}
+
+/**
+ * http_post - post a form back to the specified URL
+ * @handle: HTTP handle
+ * @buf: http_buffer structure pointer
+ * @url: URL to post to
+ * @data: data string to send with post
+ * @redir: follow redirections automatically? (1=yes; 0=no)
+ * @ignore_cert: ignore certificate validation errors (1=yes; 0=no)
+ * @headers: a list of headers to be included in the request
+ * Result: libcurl result code for post
+ */
+int http_post(void *handle, struct http_buffer *buf, const char *url,
+		   const char *data, int redir, int ignore_cert,
+		   struct http_headers *headers)
+{
+	char *url_post;
+	char *post_data_file = NULL;
+	struct stat statbuf;
+	char *filename = NULL;
+	int ret = -1;
+	int i;
+
+	Debug("HTTP POST %s\n", url);
+
+	if (headers) {
+		for (i = 0; i < headers->count; i++) {
+			Debug("HTTP HEADER %s: %s\n",
+				  headers->entries[i].name,
+				  headers->entries[i].value);
+		}
+	}
+
+	Debug("data: %s\n", data);
+
+	url_post = malloc(strlen("POST-") + strlen(url) + 1);
+	if (! url_post)
+		return -1;
+	sprintf(url_post, "POST-%s", url);
+			
+	sim_get_best_match(url_post, &filename, 1);
+
+	if (filename == NULL)
+		goto finished;
+
+	post_data_file = malloc(strlen(filename) + strlen(".data") + 1);
+
+	if (!post_data_file)
+		goto finished;
+	
+	sprintf(post_data_file, "%s.data", filename);
+	sim_url_escape(post_data_file);
+
+	if (stat(post_data_file, &statbuf) == 0) {
+		char *expected_data;
+			
+		Debug("Expected POST data from %s\n", post_data_file);
+
+		expected_data = sim_read_file(post_data_file);
+
+		if (!expected_data) {
+			goto finished;
+		}
+
+		if (strcmp(data, expected_data)) {
+			Debug("Unexpected POST data: '\n%s\n' expected: '\n%s\n'\n",
+				  data, expected_data);
+			http_reset_buffer(buf);
+			free(expected_data);
+			goto finished;
+		}
+	
+		Debug("POST data in '%s' matched\n", post_data_file);
+
+		free(expected_data);
+	}
+
+	ret = http_transaction(handle, url_post, buf, redir, headers);
+
+finished:
+	free(url_post);
+	free(post_data_file);
+	free(filename);
+
+	return ret;
+}
+
+/**
+ * http_init - initialise an HTTP session
+ * @plaform: platform name
+ * @uuid: device UUID
+ * Returns: HTTP handle to use in other calls
+ */
+void *http_init(const char *platform, const char *uuid)
+{
+	return "ok";
+}
+
+/**
+ * http_deinit - terminate an HTTP session
+ * @handle: HTTP handle
+ */
+void http_deinit(void *handle)
+{
+}
+
+
+#else
+
+#include <curl/curl.h>
 
 struct http_curl_handle {
        CURL *curl;
@@ -392,3 +719,5 @@ int http_set_https_certificate_file(void *handle, const char *filename)
 	curl_easy_setopt(h->curl, CURLOPT_CAINFO, filename);
 	return 0;
 }
+
+#endif /* AWS_DYNAMO_HTTP_SIM */
