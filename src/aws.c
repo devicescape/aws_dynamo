@@ -321,6 +321,7 @@ int aws_post(struct aws_handle *aws, const char *aws_service, const char *target
 	} else if (strcmp(aws_service, "kinesis") == 0) {
 		scheme = "https";  /*FIXME: This is only supported in HTTPS, ugh it will be slower....*/
         host = "kinesis.us-east-1.amazonaws.com";
+        region = AWS_DYNAMO_DEFAULT_REGION; /* FIXME - make region configurable for Kinesis. */
         /* This is a bit of a hack, but fast.  Searching through the headers and doing O(N) strcmp is slow.*/
         /*Kinesis uses a different content-type*/
         hdrs[content_type_offset].value = AWS_KINESIS_CONTENT_TYPE;
