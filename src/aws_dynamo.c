@@ -921,3 +921,14 @@ int aws_dynamo_set_endpoint(struct aws_handle *aws, const char *host, const char
 void aws_dynamo_set_port(struct aws_handle *aws, int port) {
 	aws->dynamo_port = port;
 }
+
+int aws_dynamo_layer1_request(struct aws_handle *aws, const char *target, const char *body) {
+	int rv;
+
+	rv = aws_dynamo_request(aws, target, body);
+	return rv;
+}
+
+const char *aws_dynamo_layer1_get_response(struct aws_handle *aws, int *response_len) {
+	return http_get_data(aws->http, response_len);
+}

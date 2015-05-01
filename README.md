@@ -6,8 +6,7 @@ AWS DynamoDB Library for C and C++
 Features
 ========
 
-* AWS DynamoDB API version 2011-12-05 (DynamoDB v1 protocol)
-* Supports all DynamoDB operations
+* Supports all DynamoDB operations (v1 and v2 protocols)
 * A flexible, efficient, and fast API for accessing DynamoDB
   from within C applications.
 * Supports obtaining AWS credentials from an IAM Role,
@@ -55,6 +54,13 @@ $ sudo make install
 
 Basic Usage
 ===========
+
+For DynamoDB v2 support the library no longer provides an in-memory
+representation of the response.  Instead, users of the library need to
+parse the JSON response on their own.  See ./examples/v2-example.c
+
+For v1 the library parses the response and creates an in-memory
+representation of the response.
 
 See the examples/ subdirectory for detailed examples.
 

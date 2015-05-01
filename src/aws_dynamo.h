@@ -54,6 +54,20 @@ extern "C" {
 #define AWS_DYNAMO_UPDATE_ITEM		"DynamoDB_20111205.UpdateItem"
 #define AWS_DYNAMO_UPDATE_TABLE		"DynamoDB_20111205.UpdateTable"
 
+#define AWS_DYNAMO_V2_BATCH_GET_ITEM	"DynamoDB_20120810.BatchGetItem"
+#define AWS_DYNAMO_V2_BATCH_WRITE_ITEM	"DynamoDB_20120810.BatchWriteItem"
+#define AWS_DYNAMO_V2_CREATE_TABLE		"DynamoDB_20120810.CreateTable"
+#define AWS_DYNAMO_V2_DELETE_ITEM		"DynamoDB_20120810.DeleteItem"
+#define AWS_DYNAMO_V2_DELETE_TABLE		"DynamoDB_20120810.DeleteTable"
+#define AWS_DYNAMO_V2_DESCRIBE_TABLE	"DynamoDB_20120810.DescribeTable"
+#define AWS_DYNAMO_V2_GET_ITEM			"DynamoDB_20120810.GetItem"
+#define AWS_DYNAMO_V2_LIST_TABLES		"DynamoDB_20120810.ListTables"
+#define AWS_DYNAMO_V2_PUT_ITEM			"DynamoDB_20120810.PutItem"
+#define AWS_DYNAMO_V2_QUERY				"DynamoDB_20120810.Query"
+#define AWS_DYNAMO_V2_SCAN					"DynamoDB_20120810.Scan"
+#define AWS_DYNAMO_V2_UPDATE_ITEM		"DynamoDB_20120810.UpdateItem"
+#define AWS_DYNAMO_V2_UPDATE_TABLE		"DynamoDB_20120810.UpdateTable"
+
 #define AWS_DYNAMO_ACCESS_DENIED_EXCEPTION							"AccessDeniedException"
 #define AWS_DYNAMO_CONDITIONAL_CHECK_FAILED_EXCEPTION				"ConditionalCheckFailedException"
 #define AWS_DYNAMO_INCOMPLETE_SIGNATURE_EXCEPTION					"IncompleteSignatureException"
@@ -308,5 +322,9 @@ void aws_dynamo_free_item(struct aws_dynamo_item *item);
 #include "aws_dynamo_scan.h"
 #include "aws_dynamo_update_item.h"
 #include "aws_dynamo_update_table.h"
+
+int aws_dynamo_layer1_request(struct aws_handle *aws, const char *target, const char *body);
+
+const char *aws_dynamo_layer1_get_response(struct aws_handle *aws, int *response_len);
 
 #endif /* _AWS_DYNAMO_H_ */
