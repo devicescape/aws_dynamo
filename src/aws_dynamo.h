@@ -305,10 +305,6 @@ struct aws_dynamo_item *aws_dynamo_copy_item(struct aws_dynamo_item *item);
 
 void aws_dynamo_free_item(struct aws_dynamo_item *item);
 
-#ifdef  __cplusplus
-}
-#endif
-
 #include "aws_dynamo_batch_get_item.h"
 #include "aws_dynamo_batch_write_item.h"
 #include "aws_dynamo_create_table.h"
@@ -326,5 +322,9 @@ void aws_dynamo_free_item(struct aws_dynamo_item *item);
 int aws_dynamo_layer1_request(struct aws_handle *aws, const char *target, const char *body);
 
 const char *aws_dynamo_layer1_get_response(struct aws_handle *aws, int *response_len);
+
+#ifdef  __cplusplus
+}
+#endif
 
 #endif /* _AWS_DYNAMO_H_ */
