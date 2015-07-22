@@ -117,6 +117,8 @@ enum {
 #define AWS_DYNAMO_JSON_TYPE_STRING_SET	"SS"
 #define AWS_DYNAMO_JSON_TYPE_NUMBER			"N"
 #define AWS_DYNAMO_JSON_TYPE_NUMBER_SET	"NS"
+#define AWS_DYNAMO_JSON_TYPE_LIST           "L"
+#define AWS_DYNAMO_JSON_TYPE_MAP            "M"
 
 #define AWS_DYNAMO_JSON_TABLE_DESCRIPTION "TableDescription"
 #define AWS_DYNAMO_JSON_TABLE "Table"
