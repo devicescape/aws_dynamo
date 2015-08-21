@@ -132,9 +132,15 @@ Notes
 =====
 
 In all cases the caller is responsible for creating the request json.  This
-requires some understanding of the AWS DynamoDB API.  The most recent AWS
-DynamoDB API is different from the one implemented here.  Documentation for the
-DynamoDB API version that this ilbrary implements can be found here:
+requires some understanding of the AWS DynamoDB API.  The v2 API is documented
+here:
+
+http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/operationlist.html
+
+As discussed above when the v2 API is used the caller is required to parse the
+JSON response.
+
+Documentation for the v1 DynamoDB API can be found here:
 
 http://aws.amazon.com/archives/Amazon-DynamoDB
 
