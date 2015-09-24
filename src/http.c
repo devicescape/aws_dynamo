@@ -69,7 +69,6 @@ static void http_free_buffer(struct http_buffer *buf)
 static void http_reset_buffer(struct http_buffer *buf)
 {
 	buf->cur = 0;
-	memset(buf->data, 0, buf->max);
 }
 
 #ifdef AWS_DYNAMO_HTTP_SIM
