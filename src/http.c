@@ -543,6 +543,10 @@ static int http_transaction(void *handle, const char *url,
 		curl_slist_free_all(headers);
 	}
 
+	if (buf->cur >= buf->max)
+		buf->cur = buf->max - 1;
+	buf->data[buf->cur] = '\0';
+
 	return ret;
 }
 
@@ -675,10 +679,6 @@ int http_post(void *handle, const char *url,
 #endif
 
 	rv = http_transaction(handle, url, data, HTTP_NOCLOSE, hdrs);
-
-	if (buf->cur >= buf->max)
-		buf->cur = buf->max - 1;
-	buf->data[buf->cur] = '\0';
 
 #if DEBUG_HTTP
 	Debug("HTTP RECV %d BYTES:\n%s\n", buf->cur, buf->data);
