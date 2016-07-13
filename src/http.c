@@ -603,8 +603,8 @@ void *http_init()
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, h->agent);
 
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
 
 	h->curl = curl;
 
