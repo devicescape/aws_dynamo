@@ -25,7 +25,7 @@
 #include "http.h"
 #include "aws_dynamo_utils.h"
 
-//#define DEBUG_HTTP 1
+#define DEBUG_HTTP 1
 
 /**
  * http_new_buffer - allocate a new buffer of the specified size
