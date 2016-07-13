@@ -154,9 +154,9 @@ int http_transaction(void *handle, const char *initial_url,
 	int ret = -1;
 	char *url;
 	struct stat statbuf;
-	
+
 	url = strdup(initial_url);
-	
+
 	if (url == NULL) {
 		perror("strdup");
 		return -1;
@@ -179,7 +179,7 @@ int http_transaction(void *handle, const char *initial_url,
 		}
 
 		fetch_file(buf, filename);
-			
+
 		/* Handle .redir files */
 
 		redir_file = malloc(strlen(filename) + strlen(".redir") + 1);
@@ -189,7 +189,7 @@ int http_transaction(void *handle, const char *initial_url,
 
 		if ((fd = open(redir_file, O_RDONLY)) >= 0) {
 			char *redir_url;
-	
+
 			if (stat(redir_file, &statbuf) != 0)
 				goto error;
 
@@ -210,7 +210,7 @@ int http_transaction(void *handle, const char *initial_url,
 				url = http_make_full_url(handle, buf,
 							 buf->redir, HTTP_NO_USE_BASE);
 				http_reset_buffer(buf);
-			
+
 				Debug("Following HTTP redirect to: %s\n",
 						url);
 			}
@@ -220,7 +220,7 @@ int http_transaction(void *handle, const char *initial_url,
 		redir_file = NULL;
 
 	} while (redir == HTTP_FOLLOW);
-		
+
 	effective_file = malloc(strlen(filename) + strlen(".effective") + 1);
 	if (! effective_file)
 		goto error;
@@ -327,7 +327,7 @@ int http_post(void *handle, struct http_buffer *buf, const char *url,
 	if (! url_post)
 		return -1;
 	sprintf(url_post, "POST-%s", url);
-			
+
 	sim_get_best_match(url_post, &filename, 1);
 
 	if (filename == NULL)
@@ -337,13 +337,13 @@ int http_post(void *handle, struct http_buffer *buf, const char *url,
 
 	if (!post_data_file)
 		goto finished;
-	
+
 	sprintf(post_data_file, "%s.data", filename);
 	sim_url_escape(post_data_file);
 
 	if (stat(post_data_file, &statbuf) == 0) {
 		char *expected_data;
-			
+
 		Debug("Expected POST data from %s\n", post_data_file);
 
 		expected_data = sim_read_file(post_data_file);
@@ -359,7 +359,7 @@ int http_post(void *handle, struct http_buffer *buf, const char *url,
 			free(expected_data);
 			goto finished;
 		}
-	
+
 		Debug("POST data in '%s' matched\n", post_data_file);
 
 		free(expected_data);
@@ -538,7 +538,7 @@ static int http_transaction(void *handle, const char *url,
 		curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &buf->response);
 	}
 
-	if (hdrs) {	
+	if (hdrs) {
 		curl_easy_setopt(curl, CURLOPT_HTTPHEADER, NULL);
 		curl_slist_free_all(headers);
 	}
@@ -598,13 +598,13 @@ void *http_init()
 
 	/* Set the maximum time in seconds that a transfer can take. */
 	curl_easy_setopt(curl, CURLOPT_TIMEOUT, 10);
-		
+
 	/* Tell curl not to use signals for timeout's etc. */
 	curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
 	curl_easy_setopt(curl, CURLOPT_USERAGENT, h->agent);
 
 	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0);
-	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 2);
 
 	h->curl = curl;
 
@@ -693,7 +693,7 @@ int http_post(void *handle, const char *url,
 /**
  * http_url_encode - URL encode a string
  * @str: NULL-terminated string to encode
- * Returns: allocated string URL encoded for AWS 
+ * Returns: allocated string URL encoded for AWS
  */
 char *http_url_encode(void *handle, const char *string)
 {
