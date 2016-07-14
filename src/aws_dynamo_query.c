@@ -45,6 +45,7 @@ enum {
 	PARSER_STATE_LAST_EVALUATED_HASH_KEY_MAP,
 	PARSER_STATE_LAST_EVALUATED_RANGE_KEY_KEY,
 	PARSER_STATE_LAST_EVALUATED_RANGE_KEY_MAP,
+        PARSER_STATE_SCANNED_COUNT_KEY,
 };
 
 static const char *parser_state_strings[] = {
@@ -64,6 +65,7 @@ static const char *parser_state_strings[] = {
 	"last evaluated hash key map",
 	"last evaluated range key key",
 	"last evaluated range key map",
+        "scanned count key",
 };
 
 static const char *parser_state_string(int state) {
@@ -94,7 +96,7 @@ static int query_number(void * ctx, const char *val, unsigned int len)
 #ifdef DEBUG_PARSER
 	char buf[len + 1];
 	snprintf(buf, len + 1, "%s", val);
-	
+
 	Debug("query_number, val = %s, enter state '%s'", buf, parser_state_string(q_ctx->parser_state));
 #endif /* DEBUG_PARSER */
 
@@ -128,7 +130,7 @@ static int query_number(void * ctx, const char *val, unsigned int len)
 							for (item = item - 1; item >= 0; item--) {
 								free(q_ctx->r->items[item].attributes);
 							}
-							free(q_ctx->r->items);	
+							free(q_ctx->r->items);
 							return 0;
 						}
 
@@ -153,6 +155,14 @@ static int query_number(void * ctx, const char *val, unsigned int len)
 			q_ctx->parser_state = PARSER_STATE_ROOT_MAP;
 			break;
 		}
+                case PARSER_STATE_SCANNED_COUNT_KEY: {
+                        if (aws_dynamo_json_get_int(val, len, &(q_ctx->r->scanned_count)) == -1) {
+                                Warnx("query_number: failed to get capacity int.");
+                                return 0;
+                        }
+                        q_ctx->parser_state = PARSER_STATE_ROOT_MAP;
+                        break;
+                }
 		default: {
 			Warnx("query_number - unexpected state");
 			return 0;
@@ -168,7 +178,7 @@ static int query_number(void * ctx, const char *val, unsigned int len)
 }
 
 static int query_string(void *ctx, const unsigned char *val,  unsigned int len)
-{  
+{
 	struct query_ctx *q_ctx = (struct query_ctx *) ctx;
 	struct aws_dynamo_item *item;
 	struct aws_dynamo_attribute *attribute;
@@ -224,12 +234,12 @@ static int query_string(void *ctx, const unsigned char *val,  unsigned int len)
 #endif /* DEBUG_PARSER */
 
 	return 1;
-}  
+}
 
 static int query_start_map(void *ctx)
-{  
+{
 	struct query_ctx *q_ctx = (struct query_ctx *) ctx;
-	
+
 #ifdef DEBUG_PARSER
 	Debug("query_start_map, enter state '%s'", parser_state_string(q_ctx->parser_state));
 #endif /* DEBUG_PARSER */
@@ -276,15 +286,15 @@ static int query_start_map(void *ctx)
 #endif /* DEBUG_PARSER */
 	return 1;
 }
- 
-static int query_map_key(void *ctx, const unsigned char *val,  
-                            unsigned int len)  
-{  
+
+static int query_map_key(void *ctx, const unsigned char *val,
+                            unsigned int len)
+{
 	struct query_ctx *q_ctx = (struct query_ctx *) ctx;
 #ifdef DEBUG_PARSER
 	char buf[len + 1];
 	snprintf(buf, len + 1, "%s", val);
-	
+
 	Debug("query_map_key, val = %s, enter state '%s'", buf, parser_state_string(q_ctx->parser_state));
 #endif /* DEBUG_PARSER */
 
@@ -292,12 +302,14 @@ static int query_map_key(void *ctx, const unsigned char *val,
 		case PARSER_STATE_ROOT_MAP: {
 			if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_CONSUMED_CAPACITY, val, len)) {
 				q_ctx->parser_state = PARSER_STATE_CAPACITY_KEY;
-			} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_COUNT, val, len)) {
-				q_ctx->parser_state = PARSER_STATE_COUNT_KEY;
+                        } else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_COUNT, val, len)) {
+                                q_ctx->parser_state = PARSER_STATE_COUNT_KEY;
+                        } else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_SCANNED_COUNT, val, len)) {
+                                q_ctx->parser_state = PARSER_STATE_SCANNED_COUNT_KEY;
 			} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_ITEMS, val, len)) {
 				q_ctx->parser_state = PARSER_STATE_ITEMS_KEY;
-			} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_LAST_EVALUATED_KEY, val, len)) {
-				q_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_KEY;
+                        } else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_LAST_EVALUATED_KEY, val, len)) {
+                                q_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_KEY;
 			} else {
 				Warnx("query_map_key: Unknown key.");
 				return 0;
@@ -336,14 +348,16 @@ static int query_map_key(void *ctx, const unsigned char *val,
 			break;
 		}
 		case PARSER_STATE_LAST_EVALUATED_MAP: {
-			if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_HASH_KEY_ELEMENT, val, len)) {
-				q_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_HASH_KEY_KEY;
-			} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_RANGE_KEY_ELEMENT, val, len)) {
-				q_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_RANGE_KEY_KEY;
-			} else {
-				Warnx("query_map_key: Unknown last eval key.");
-				return 0;
-			}
+//			if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_HASH_KEY_ELEMENT, val, len)) {
+//				q_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_HASH_KEY_KEY;
+//			} else if (AWS_DYNAMO_VALCMP(AWS_DYNAMO_JSON_RANGE_KEY_ELEMENT, val, len)) {
+//				q_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_RANGE_KEY_KEY;
+//			} else {
+//				Warnx("query_map_key: Unknown last eval key.");
+//				return 0;
+//			}
+			if(q_ctx->r->hash_key == NULL) q_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_HASH_KEY_KEY;
+			else q_ctx->parser_state = PARSER_STATE_LAST_EVALUATED_RANGE_KEY_KEY;
 			break;
 		}
 		case PARSER_STATE_LAST_EVALUATED_HASH_KEY_MAP: {
@@ -363,7 +377,7 @@ static int query_map_key(void *ctx, const unsigned char *val,
 				Warnx("query_map_key: failed to allocated last evaluated hash key type");
 				return 0;
 			}
-			
+
 			break;
 		}
 		case PARSER_STATE_LAST_EVALUATED_RANGE_KEY_MAP: {
@@ -383,7 +397,7 @@ static int query_map_key(void *ctx, const unsigned char *val,
 				Warnx("query_map_key: failed to allocated last evaluated range key type");
 				return 0;
 			}
-			
+
 			break;
 		}
 		default: {
@@ -397,7 +411,7 @@ static int query_map_key(void *ctx, const unsigned char *val,
 	Debug("query_map_key exit '%s'", parser_state_string(q_ctx->parser_state));
 #endif /* DEBUG_PARSER */
 	return 1;
-}  
+}
 
 static int query_end_map(void *ctx)
 {
@@ -505,7 +519,7 @@ static int query_end_array(void *ctx)
 	return 1;
 }
 
-static yajl_callbacks query_callbacks = {  
+static yajl_callbacks query_callbacks = {
 	.yajl_number = query_number,
 	.yajl_string = query_string,
 	.yajl_start_map = query_start_map,
@@ -542,9 +556,9 @@ struct aws_dynamo_query_response *aws_dynamo_parse_query_response(const char *re
 #endif
 
 	if (stat != yajl_status_ok) {
-		unsigned char * str = yajl_get_error(hand, 1, response, response_len);  
-		Warnx("aws_dynamo_parse_query_response: json parse failed, '%s'", (const char *) str);  
-		yajl_free_error(hand, str);  
+		unsigned char * str = yajl_get_error(hand, 1, response, response_len);
+		Warnx("aws_dynamo_parse_query_response: json parse failed, '%s'", (const char *) str);
+		yajl_free_error(hand, str);
 		yajl_free(hand);
 		aws_dynamo_free_query_response(q_ctx.r);
 		return NULL;
@@ -569,13 +583,13 @@ struct aws_dynamo_query_response *aws_dynamo_query(struct aws_handle *aws,
 
 	if (response == NULL) {
 		Warnx("aws_dynamo_query: Failed to get response.");
-		return NULL; 
+		return NULL;
 	}
 
 	if ((r = aws_dynamo_parse_query_response(response, response_len,
 		attributes, num_attributes)) == NULL) {
 		Warnx("aws_dynamo_query: Failed to parse response: '%s'", response);
-		return NULL; 
+		return NULL;
 	}
 
 	return r;
@@ -602,7 +616,7 @@ struct aws_dynamo_query_response *aws_dynamo_query_combine_and_free_responses(
 	}
 
 	/* copy items from 'next' to the new array. */
-  	memcpy(r->items + current->count, next->items, next->count * sizeof(*(next->items)));	
+  	memcpy(r->items + current->count, next->items, next->count * sizeof(*(next->items)));
 
 	r->hash_key = next->hash_key;
 	r->range_key = next->range_key;
@@ -687,6 +701,6 @@ void aws_dynamo_free_query_response(struct aws_dynamo_query_response *r) {
 	}
 
 	free(r->items);
-	free(r);	
+	free(r);
 }
 
