@@ -651,8 +651,8 @@ void aws_dynamo_dump_query_response(struct aws_dynamo_query_response *r) {
 		return;
 	}
 
-	Debug("consumed_capacity_units = %f, item count = %d",
-		r->consumed_capacity_units, r->count);
+	Debug("consumed_capacity_units = %f, item count = %d, scanned count = %d",
+		r->consumed_capacity_units, r->count, r->scanned_count);
 
 	items = r->items;
 	for (i = 0; i < r->count; i++) {
