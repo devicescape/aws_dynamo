@@ -98,9 +98,9 @@ int aws_sigv4_derive_signing_key(
 	unsigned int md_len;
 	unsigned char date_key[128];
 	int n;
-	HMAC_CTX hmac_ctx;
+	HMAC_CTX *hmac_ctx;
 
-	HMAC_CTX_init(&hmac_ctx);
+	hmac_ctx = HMAC_CTX_new();
 
 	n = snprintf(date_key, sizeof(date_key), "AWS4%s",
 		aws_secret_access_key);
@@ -110,23 +110,23 @@ int aws_sigv4_derive_signing_key(
 		return -1;
 	}
 
-	HMAC_Init_ex(&hmac_ctx, date_key, strlen(date_key), EVP_sha256(), NULL);
-	HMAC_Update(&hmac_ctx, yyyy_mm_dd, strlen(yyyy_mm_dd));
-	HMAC_Final(&hmac_ctx, md, &md_len);
+	HMAC_Init_ex(hmac_ctx, date_key, strlen(date_key), EVP_sha256(), NULL);
+	HMAC_Update(hmac_ctx, yyyy_mm_dd, strlen(yyyy_mm_dd));
+	HMAC_Final(hmac_ctx, md, &md_len);
 	
-	HMAC_Init_ex(&hmac_ctx, md, md_len, EVP_sha256(), NULL);
-	HMAC_Update(&hmac_ctx, region, strlen(region));
-	HMAC_Final(&hmac_ctx, md, &md_len);
+	HMAC_Init_ex(hmac_ctx, md, md_len, EVP_sha256(), NULL);
+	HMAC_Update(hmac_ctx, region, strlen(region));
+	HMAC_Final(hmac_ctx, md, &md_len);
 	
-	HMAC_Init_ex(&hmac_ctx, md, md_len, EVP_sha256(), NULL);
-	HMAC_Update(&hmac_ctx, service, strlen(service));
-	HMAC_Final(&hmac_ctx, md, &md_len);
+	HMAC_Init_ex(hmac_ctx, md, md_len, EVP_sha256(), NULL);
+	HMAC_Update(hmac_ctx, service, strlen(service));
+	HMAC_Final(hmac_ctx, md, &md_len);
 	
-	HMAC_Init_ex(&hmac_ctx, md, md_len, EVP_sha256(), NULL);
-	HMAC_Update(&hmac_ctx, "aws4_request", strlen("aws4_request"));
-	HMAC_Final(&hmac_ctx, md, &md_len);
+	HMAC_Init_ex(hmac_ctx, md, md_len, EVP_sha256(), NULL);
+	HMAC_Update(hmac_ctx, "aws4_request", strlen("aws4_request"));
+	HMAC_Final(hmac_ctx, md, &md_len);
 	
-	HMAC_CTX_cleanup(&hmac_ctx);
+	HMAC_CTX_free(hmac_ctx);
 
 	*key = malloc(md_len);
 	if (*key == NULL) {
@@ -143,7 +143,7 @@ char *aws_sigv4_create_signature(
 	const char *region, const char *service,
 	const unsigned char *message)
 {
-	HMAC_CTX hmac_ctx;
+	HMAC_CTX *hmac_ctx;
 	unsigned char md[EVP_MAX_MD_SIZE];
 	unsigned int md_len;
 	char *signature;
@@ -152,20 +152,20 @@ char *aws_sigv4_create_signature(
 	int key_len = 0;
 	int i;
 
-	HMAC_CTX_init(&hmac_ctx);
+	hmac_ctx = HMAC_CTX_new();
 
 	aws_sigv4_derive_signing_key(aws_secret_access_key,
 		yyyy_mm_dd, region, service, &key, &key_len);
 
-	HMAC_Init_ex(&hmac_ctx, key, key_len, EVP_sha256(), NULL);
-	HMAC_Update(&hmac_ctx, message, message_len);
-	HMAC_Final(&hmac_ctx, md, &md_len);
+	HMAC_Init_ex(hmac_ctx, key, key_len, EVP_sha256(), NULL);
+	HMAC_Update(hmac_ctx, message, message_len);
+	HMAC_Final(hmac_ctx, md, &md_len);
 	free(key);
 	signature = malloc(md_len * 2 + 1);
 
 	if (signature == NULL) {
 		Warnx("aws_sigv4_create_signature: failed to allocate sig");
-		HMAC_CTX_cleanup(&hmac_ctx);
+		HMAC_CTX_free(hmac_ctx);
 		return NULL;
 	}
 
@@ -173,7 +173,7 @@ char *aws_sigv4_create_signature(
 		sprintf(signature + i * 2, "%.2x", md[i]);
 	}
 
-	HMAC_CTX_cleanup(&hmac_ctx);
+	HMAC_CTX_free(hmac_ctx);
 
 	return signature;
 }
