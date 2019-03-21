@@ -40,7 +40,7 @@ if [ "$?" = "0" ]; then
     
     mkdir -p ds-release
     mv ${RPMDIR}/RPMS/*/*.rpm ds-release/
-    
+    mv ${RPMDIR}/SOURCES/${PKG_NAME}-${PKG_VERS}.tar.gz ds-release/
 fi
 
 rm -rf $RPMDIR
