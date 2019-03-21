@@ -259,7 +259,7 @@ static char *aws_dynamo_get_canonicalized_headers(struct http_headers *headers) 
 
 int aws_post(struct aws_handle *aws, const char *aws_service, const char *target, const char *body) {
 	char iso8601_basic_date[128];
-	char token_header[1024];
+	char token_header[4096];
 	char host_header[256];
 	char authorization[256];
 	struct http_header hdrs[] = {
