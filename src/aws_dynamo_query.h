@@ -27,8 +27,9 @@ extern "C" {
 
 struct aws_dynamo_query_response {
 	double consumed_capacity_units;
-	int count;
-		
+        int count;
+        int scanned_count;
+
 	struct aws_dynamo_item *items;
 
 	/* Last evaluated keys. */
